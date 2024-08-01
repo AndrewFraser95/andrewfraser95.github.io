@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import "../styles/ShipButton.css";
+import "@styles/ShipButton.css";
 import { useNavigate } from "react-router-dom";
 
 const ShipButton = ({ buttonText }) => {

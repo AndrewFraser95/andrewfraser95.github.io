@@ -21,9 +21,48 @@
   background-color: transparent;
 }
 
-.grey-background {
-  background-color: lightblue;
-  text-align: center;
+.post-it-note {
+  width: 300px; /* Fixed width, adjust as needed */
+  max-width: 100%; /* Responsive width */
+  padding: 20px; /* Padding for text */
+  margin: 20px; /* Margin around the note */
+  background-color: #fffb88; /* Yellow sticky note color */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), /* Shadow for 3D effect */
+              0 1px 2px rgba(0, 0, 0, 0.2);
+  border: 1px solid #e8e8e8; /* Subtle border */
+  font-family: 'Comic Sans MS', cursive, sans-serif; /* Fun font style */
+  color: #333; /* Text color */
+  line-height: 1.5; /* Line height for readability */
+  position: relative; /* For pseudo-elements */
+  transform: rotate(-2deg); /* Slight rotation for a natural look */
+}
+
+/* Adding a triangle effect at the top left corner */
+.post-it-note::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  border-width: 10px;
+  border-style: solid;
+  border-color: transparent transparent #fffb88 #fffb88; /* Matches note color */
+  box-shadow: -3px 3px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Adding a tape effect */
+.post-it-note::after {
+  content: "";
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  height: 10px;
+  background-color: rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transform: rotate(-10deg);
 }
 
 .contact-me-form {
@@ -52,7 +91,7 @@ label {
 
 .hundred-button {
   width: calc(100% - 40px); /* 100% width with 20px margin on both sides */
-  margin: 10px; /* Margin to separate from other buttons */
+  margin: 20px; /* Margin to separate from other buttons */
 }
 
 .fifty-button {

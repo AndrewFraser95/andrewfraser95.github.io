@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import "../styles/SpaceButton.css";
+import "@styles/SpaceButton.css";
 import { useNavigate } from "react-router-dom";
 
 const SpaceButton = ({ buttonText }) => {

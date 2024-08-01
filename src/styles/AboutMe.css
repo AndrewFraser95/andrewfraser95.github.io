@@ -12,7 +12,7 @@
 
 .planet-container {
   opacity: 0;
-  animation: fadeOut 10s forwards;
+  animation: fadeOut 20s forwards;
   z-index: 1;
 }
 

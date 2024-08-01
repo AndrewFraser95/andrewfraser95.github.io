@@ -1,5 +1,5 @@
 import React from "react";
-import "../styles/ShipButton.css";
+import "@styles/ShipButton.css";
 
 const SubmitFormButton = ({ buttonText, onSubmit }) => {
   const handleClick = (e) => {

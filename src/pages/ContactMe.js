@@ -1,9 +1,9 @@
 import React from "react";
-import { SpaceContainer } from "../components/StyledComponents";
-import ContactMeForm from "../components/ContactMeForm";
-import AnimatedComponents from "../components/AnimatedComponents";
+import { SpaceContainer } from "@components/StyledComponents";
+import ContactMeForm from "@components/ContactMeForm";
+import AnimatedComponents from "@components/AnimatedComponents";
 import { useNavigate } from "react-router-dom";
-import "../styles/Page.css";
+import "@styles/Page.css";
 
 const ContactMe = () => {
   const navigate = useNavigate();

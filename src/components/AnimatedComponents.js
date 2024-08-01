@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import "../styles/index.css";
+import "@styles/index.css";
 
 function getRandomColor() {
   const randomInt = (min, max) =>

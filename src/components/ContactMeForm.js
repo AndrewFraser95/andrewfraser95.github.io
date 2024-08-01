@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import SubmitFormButton from "./SubmitFormButton";
-import "../styles/ContactMeForm.css"; // Create a CSS file for styling
+import "@styles/ContactMeForm.css"; // Create a CSS file for styling
 
 const ContactMeForm = () => {
   const [formData, setFormData] = useState({
@@ -80,7 +80,7 @@ const ContactMeForm = () => {
               &times;
             </span>
             <h2 className="space-heading">Jokes, who uses emails anymore?</h2>
-            <p className="grey-background">
+            <p className="post-it-note">
               Hey Andy, Love the site. I'm <strong>{formData.name}.</strong>
               <br />
               <strong>{formData.message}</strong>

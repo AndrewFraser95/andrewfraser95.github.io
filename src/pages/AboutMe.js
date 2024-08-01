@@ -1,8 +1,8 @@
 import React from "react";
-import { SpaceContainer } from "../components/StyledComponents";
-import AnimatedComponents from "../components/AnimatedComponents";
+import { SpaceContainer } from "@components/StyledComponents";
+import AnimatedComponents from "@components/AnimatedComponents";
 import { useNavigate } from "react-router-dom";
-import "../styles/AboutMe.css";
+import "@styles/AboutMe.css";
 
 const AboutMe = () => {
   const navigate = useNavigate();
@@ -18,8 +18,7 @@ const AboutMe = () => {
         <h2>Who is Andrew Fraser?</h2>
         <h3>Good Question!</h3>
         <p>
-          I am a 27-year-old programmer with nearly 20 years’ worth of
-          experience being a massive nerd. I currently work at AND Digital as a
+          I am a 28-year-old developer currently working at AND Digital as a
           Senior Product Developer working for a variety of clients. Delivering
           high-quality frontend applications and websites, helping clients
           improve their Agile artefacts and trying to upskill all members of the
@@ -42,16 +41,8 @@ const AboutMe = () => {
 
         <h3>What do you do…here?</h3>
         <p>
-          This blog is home to a lot of blog posts. Those that cover various
-          tech trivia and gadgets, namely smart home devices. As well as
-          discussing various professional ideas of which opinions are solely my
-          own. At work I specialise in creating extremely high-quality, TDD,
-          projects that are extensible, accessible and versatile and outside of
-          work I specialise in Pub Quizzes, running 5k’s and finding bargains
-          online. In the past, I have focussed on areas of, as the government is
-          now calling it “Cyber”, such as Digital Footprints, Neural Networks
-          and even straying into iOS app development for the National Railway
-          Museum.
+          This is just my personal website to host a few cool ideas, projects,
+          links and to work on a site outside of client.
         </p>
 
         <h3>Projects</h3>
@@ -62,6 +53,18 @@ const AboutMe = () => {
           Delivering very performant work, in a timely manner to the highest of
           standards. Quickly moving up the ranks within the company receiving
           some very lovely feedback as to my efforts.
+        </p>
+
+        <h3>Artificial Intelligence</h3>
+        <p>
+          Having recently come third in a ChatGPT Builder competition in AND
+          Digital, for a GPT that allows all ANDI's to quickly be able to
+          progress their career, track skills and access training links related
+          to their growth, I like to think of myself as keeping up with the
+          times. Also having just assisting with an external business to AND and
+          their training, upskilling and prototyping of a Quote builder to
+          assist with being able to quickly price up projects for them, enabling
+          massive time savings that can now be invested elsewhere.
         </p>
 
         <h3>Digital Footprints</h3>
