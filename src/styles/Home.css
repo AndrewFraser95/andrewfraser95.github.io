@@ -1,0 +1,33 @@
+h1 {
+  opacity: 0;
+  animation: fadeIn 3s forwards;
+  z-index: 1;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.space-button {
+  margin-bottom: 15px;
+  opacity: 0;
+  animation: fadeIn 10s forwards;
+  z-index: 1;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.ship-button {
+  opacity: 0;
+  animation: fadeIn 10s forwards;
+  z-index: 1;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}

@@ -1,0 +1,35 @@
+/* shipButton.css */
+.ship-button {
+  padding: 15px 30px;
+  font-size: 20px;
+  background-color: blue;
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  z-index: 1;
+}
+
+.ship-button:hover {
+  transform: translateX(-5px);
+}
+
+.ship-button.active {
+  animation: shipLaunch 2s linear;
+}
+
+@keyframes shipLaunch {
+  0% {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+  99% {
+    opacity: 1;
+    transform: translateX(-100vw) scale(0);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(-100vw) scale(0);
+  }
+}
