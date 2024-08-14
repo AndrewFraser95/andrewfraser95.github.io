@@ -1,0 +1,102 @@
+/* Container */
+.rocket-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  width: 100px;
+  height: 400px; /* Extended height to accommodate animation */
+  margin: 20px auto;
+  z-index: 90000;
+}
+
+/* Rocket Styling */
+.rocket {
+  position: relative;
+  width: 50px;
+  height: 100px;
+  background-color: grey;
+  border-radius: 25px;
+  cursor: pointer;
+  transition: transform 2s ease-out;
+}
+
+.rocket-body {
+  position: relative;
+  width: 50px;
+  height: 100px;
+  background-color: grey;
+  border-radius: 25px;
+  z-index: 2;
+}
+
+/* Rocket Tip */
+.rocket-tip {
+  position: absolute;
+  top: -15px;
+  left: 12.5px;
+  width: 25px;
+  height: 25px;
+  background-color: grey;
+  clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
+}
+
+/* Rocket Fins */
+.rocket-fin {
+  position: absolute;
+  bottom: 10px;
+  width: 20px;
+  height: 30px;
+  background-color: grey;
+}
+
+.left-fin {
+  left: -20px;
+  transform: rotate(-30deg);
+}
+
+.right-fin {
+  right: -20px;
+  transform: rotate(30deg);
+}
+
+/* Fire Animation */
+.fire {
+  position: absolute;
+  left: 50%;
+  bottom: -10px;
+  transform: translateX(-50%);
+  display: flex;
+  justify-content: space-around;
+  /* width: 20px; */
+  z-index: 1;
+}
+
+.flame {
+  width: 0;
+  height: 0;
+  border-left: 7px solid transparent;
+  border-right: 7px solid transparent;
+  border-top: 20px solid orange;
+  opacity: 0.9;
+  animation: flicker 0.5s infinite;
+}
+
+.flame:nth-child(0) {
+    transform: rotate(45deg);
+}
+
+.flame:nth-child(2) {
+    transform: rotate(180deg);
+}
+
+@keyframes flicker {
+  0% { opacity: 0.5; transform: translateY(2px); }
+  50% { opacity: 1; transform: translateY(0px); }
+  100% { opacity: 0.5; transform: translateY(2px); }
+}
+
+/* Launch Animation */
+.launch {
+  transform: translateY(-300px);
+}

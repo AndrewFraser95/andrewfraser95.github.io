@@ -1,7 +1,7 @@
 import React from "react";
 import { SpaceContainer } from "@components/StyledComponents";
-import SpaceButton from "@components/SpaceButton";
-import ShipButton from "@components/ShipButton";
+import RocketButton from "@components/RocketButton";
+import SubmarineButton from "@components/SubmarineButton";
 import AnimatedComponents from "@components/AnimatedComponents";
 import "@styles/Home.css";
 
@@ -9,8 +9,8 @@ const Home = () => {
   return (
     <SpaceContainer>
       <h1 className="fade-in">Andrew Fraser</h1>
-      <SpaceButton buttonText="About Me" />
-      <ShipButton buttonText="Contact Me" />
+      <RocketButton buttonText="About Me" />
+      <SubmarineButton buttonText="Contact Me" />
       <AnimatedComponents />
     </SpaceContainer>
   );

@@ -70,7 +70,11 @@ const ContactMeForm = () => {
             required
           ></textarea>
         </div>
-        <SubmitFormButton buttonText="Submit" onSubmit={handleSubmit} />
+        <SubmitFormButton
+          className="previous-button"
+          buttonText="Submit"
+          onSubmit={handleSubmit}
+        />
       </form>
 
       {showModal && (

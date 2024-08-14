@@ -9,7 +9,7 @@ h1 {
   to { opacity: 1; }
 }
 
-.space-button {
+.rocket-button {
   margin-bottom: 15px;
   opacity: 0;
   animation: fadeIn 10s forwards;
@@ -21,7 +21,7 @@ h1 {
   to { opacity: 1; }
 }
 
-.ship-button {
+.submarine-button {
   opacity: 0;
   animation: fadeIn 10s forwards;
   z-index: 1;

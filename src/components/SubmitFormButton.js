@@ -1,5 +1,5 @@
 import React from "react";
-import "@styles/ShipButton.css";
+import "@styles/SubmarineButton.css";
 
 const SubmitFormButton = ({ buttonText, onSubmit }) => {
   const handleClick = (e) => {
@@ -10,7 +10,7 @@ const SubmitFormButton = ({ buttonText, onSubmit }) => {
   };
 
   return (
-    <button className="space-button" onClick={handleClick} type="button">
+    <button onClick={handleClick} className="previous-button" type="button">
       {buttonText}
     </button>
   );
