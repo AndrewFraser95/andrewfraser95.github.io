@@ -71,7 +71,6 @@ const ContactMeForm = () => {
           ></textarea>
         </div>
         <SubmitFormButton
-          className="previous-button"
           buttonText="Submit"
           onSubmit={handleSubmit}
         />
