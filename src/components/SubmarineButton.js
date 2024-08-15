@@ -17,7 +17,7 @@ const SubmarineButton = () => {
   return (
     <div className="submarine-container">
       <div
-        className={`submarine ${launch ? "launch" : ""}`}
+        className={`submarine ${launch ? "submarine-launch" : ""}`}
         onClick={handleLaunch}
       >
         <div className="submarine-body">

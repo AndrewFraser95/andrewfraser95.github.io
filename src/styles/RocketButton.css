@@ -97,6 +97,6 @@
 }
 
 /* Launch Animation */
-.launch {
+.rocket-launch {
   transform: translateY(-300px);
 }

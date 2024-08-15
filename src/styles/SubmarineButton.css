@@ -120,6 +120,6 @@
 }
 
 /* Launch Animation */
-.launch {
+.submarine-launch {
   transform: translateX(300px); /* Moves to the right */
 }

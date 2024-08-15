@@ -17,7 +17,7 @@ const RocketButton = () => {
   return (
     <div className="rocket-container">
       <div
-        className={`rocket ${launch ? "launch" : ""}`}
+        className={`rocket ${launch ? "rocket-launch" : ""}`}
         onClick={handleLaunch}
       >
         <div className="rocket-body"></div>
