@@ -1,19 +1,21 @@
 .previous-button {
-  background-color: #e67e22;
+  background: linear-gradient(135deg, #00d4ff 0%, #8b5cf6 100%);
   color: white;
   padding: 12px 35px;
   margin: 4px;
   font-size: 15px;
   font-weight: 500;
   border: none;
-  border-radius: 10px;
+  border-radius: 50px;
   cursor: pointer;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: 0 4px 15px rgba(0, 212, 255, 0.3);
+  transition: all 0.3s ease;
   z-index: 1;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
 .previous-button:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 10px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 8px 25px rgba(0, 212, 255, 0.5);
 }

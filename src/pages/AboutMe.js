@@ -1,6 +1,6 @@
 import React from "react";
+import { motion } from "framer-motion";
 import { SpaceContainer } from "@components/StyledComponents";
-import AnimatedComponents from "@components/AnimatedComponents";
 import { useNavigate } from "react-router-dom";
 import "@styles/AboutMe.css";
 
@@ -8,128 +8,147 @@ const AboutMe = () => {
   const navigate = useNavigate();
 
   const handleClick = () => {
-    navigate("/Home");
+    navigate("/");
+  };
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+      },
+    },
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.5,
+      },
+    },
   };
 
   return (
     <SpaceContainer>
-      <div className="content-container">
-        <h1>About Me</h1>
-        <h2>Who is Andrew Fraser?</h2>
-        <h3>Good Question!</h3>
-        <p>
-          I am a 28-year-old developer currently working at AND Digital as a
-          Senior Product Developer working for a variety of clients. Delivering
-          high-quality frontend applications and websites, helping clients
-          improve their Agile artefacts and trying to upskill all members of the
-          teams. Before that I worked for High Speed Training in their Learner
-          Engagement team; focusing on collecting user engagement using Azure
-          Application Insights, creating templates for our in-house content
-          authors to use in our Angular Single Page Web App, expanding our
-          RESTful API functionality and maintaining excellent Lighthouse scores
-          for all of our pages.
-        </p>
+      <motion.div
+        className="about-container"
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+      >
+        <motion.div className="about-header" variants={itemVariants}>
+          <h1>Andrew Fraser</h1>
+          <p className="subtitle">Senior Product Developer & Creative Technologist</p>
+        </motion.div>
 
-        <h3>What do you do…generally?</h3>
-        <p>
-          In my spare time, I enjoy automating various things around my house,
-          reading books outside and getting a bit too competitive at pub
-          quizzes. I live with my partner Charley and we’ve yet to have any
-          pets. But when we do buy a house we want to buy some chickens that we
-          have already named Jelly, Jammy and Gemma.
-        </p>
+        <motion.div className="about-content" variants={itemVariants}>
+          <div className="about-section">
+            <h2>Who I Am</h2>
+            <p>
+              I'm a 28-year-old developer currently working at AND Digital as a
+              Senior Product Developer, delivering high-quality frontend applications 
+              and websites for a variety of clients. I help teams improve their Agile 
+              practices and continuously upskill team members.
+            </p>
+            <p>
+              Previously, I worked at High Speed Training in their Learner Engagement 
+              team, focusing on user engagement analytics using Azure Application Insights, 
+              creating templates for content authors in our Angular SPA, expanding RESTful 
+              API functionality, and maintaining excellent Lighthouse scores across all pages.
+            </p>
+          </div>
 
-        <h3>What do you do…here?</h3>
-        <p>
-          This is just my personal website to host a few cool ideas, projects,
-          links and to work on a site outside of client.
-        </p>
+          <div className="about-section">
+            <h2>Life Beyond Code</h2>
+            <p>
+              When I'm not coding, I enjoy automating things around my house, reading 
+              books outside, and getting a bit too competitive at pub quizzes. I live 
+              with my partner Charley, and we're planning to get chickens named Jelly, 
+              Jammy, and Gemma when we buy a house.
+            </p>
+          </div>
 
-        <h3>Projects</h3>
-        <p>
-          I’ve worked with a variety of clients at AND Digital, some of whom I
-          can’t disclose on this blog. But I can say that I’ve worked on
-          Extremely large-scale websites for very well-known companies.
-          Delivering very performant work, in a timely manner to the highest of
-          standards. Quickly moving up the ranks within the company receiving
-          some very lovely feedback as to my efforts.
-        </p>
+          <div className="about-section">
+            <h2>What I Do Here</h2>
+            <p>
+              This is my personal website to host cool ideas, projects, and links—a 
+              space to work on something outside of client work.
+            </p>
+          </div>
 
-        <h3>Artificial Intelligence</h3>
-        <p>
-          Having recently come third in a ChatGPT Builder competition in AND
-          Digital, for a GPT that allows all ANDI's to quickly be able to
-          progress their career, track skills and access training links related
-          to their growth, I like to think of myself as keeping up with the
-          times. Also having just assisting with an external business to AND and
-          their training, upskilling and prototyping of a Quote builder to
-          assist with being able to quickly price up projects for them, enabling
-          massive time savings that can now be invested elsewhere.
-        </p>
+          <div className="about-section">
+            <h2>Projects & Experience</h2>
+            <div className="project-card">
+              <h3>Enterprise Development</h3>
+              <p>
+                I've worked with various clients at AND Digital, including extremely 
+                large-scale websites for well-known companies. I deliver performant work 
+                on time to the highest standards, quickly advancing within the company 
+                and receiving excellent feedback.
+              </p>
+            </div>
 
-        <h3>Digital Footprints</h3>
-        <p>
-          In 2016 I did a short 15-minute presentation on Digital Footprints and
-          what they really mean when you get rid of all the technology
-          mumbo-jumbo. I demonstrated I could acquire extensive personal
-          information about a subject. Their family members, finances, political
-          views and had a great footing to start Social Engineering this person.
-          Ending the presentation with tips on how to secure yourself online and
-          a Q+A that delved into the more complex nature of securing friends and
-          family online.
-        </p>
+            <div className="project-card">
+              <h3>Artificial Intelligence</h3>
+              <p>
+                I came third in a ChatGPT Builder competition at AND Digital, creating 
+                a GPT that helps ANDI's progress their careers, track skills, and access 
+                training links. I've also assisted external businesses with training, 
+                upskilling, and prototyping a Quote builder that enables massive time 
+                savings.
+              </p>
+            </div>
 
-        <h3>Neural Networks</h3>
-        <p>
-          My Dissertation at University was titled, “Sentiment Analysis on
-          Shakespeare Sonnets written using Andrej Karpathy’s Recurrent Neural
-          Network.” It focussed on rehashing a Neural Network and feeding it all
-          of Shakespeare’s Sonnets, getting the results from the Neural Network
-          after various iterations. The results from this were then put through
-          spellcheck and then handed to a group of testers and asked to be rated
-          on both content and emotional impact. The conclusion? The original
-          hypothesis stated that if a Recurrent Neural Network could replicate
-          something that could be mistaken for an Elizabethan Sonnet,
-          specifically a work by Shakespeare, then the project would be a
-          success; with ‘replication’ defined by promising results after
-          sentiment analysis. The original target, as illustrated in Chapter 4,
-          Section 3, was to create a recurrent neural network with around 89.6%
-          accuracy, similar to that of Shakespeare, (Words he used, versus words
-          he created). In the Sonnet seen in Chapter 5, Section 1, Part 6, which
-          was reached in about 30 minutes, 83 out of the 100 words produced were
-          valid or pseudo-valid (following English grammar rules). This figure
-          is only 6.6% behind the yardstick set out at the outset for
-          Shakespeare’s accuracy: perhaps the greatest writer in history, with a
-          lifetime of linguistic experience and human emotion to draw upon. So
-          while the RNN-written sonnet hardly qualifies as great literature, it
-          could be argued that as the Recurrent Neural Network started with no
-          knowledge of the English Language – and had, presumably, never had its
-          heart broken – to create the sonnet that it generated after just 30
-          minutes is a highly promising result.
-        </p>
+            <div className="project-card">
+              <h3>Digital Security</h3>
+              <p>
+                In 2016, I gave a presentation on Digital Footprints, demonstrating how 
+                to acquire extensive personal information about individuals—their family 
+                members, finances, and political views—to illustrate social engineering 
+                risks. I concluded with practical tips on securing yourself and your 
+                loved ones online.
+              </p>
+            </div>
 
-        <h3>iOS Development?</h3>
-        <p>
-          Yes. iOS Development. I spent a term in my final year at University,
-          between classes, working with the lovely folk at the National Railway
-          Museum (NRM), in making one of their extremely interesting data
-          collections, accessible to a wider audience. The app titled, “Fallen
-          Railwaymen”, was an iOS application, that was responsive on all iOS
-          devices, that made available a database of 11,000 strong World War
-          soldiers that had also worked for the railway, but fallen in battle,
-          and some location, trivia and rank of the officer. Splitting the app
-          up to using an Apple Maps API, to pin the locations of the soldiers
-          and their homes, on a map to investigate. A quiz on other War facts
-          related to both the data and the railway in general. As well as an
-          efficient search functionality to allow people to search soldiers by
-          location, surname, rank or battalion.
-        </p>
-      </div>
+            <div className="project-card">
+              <h3>Neural Networks</h3>
+              <p>
+                My University dissertation was titled "Sentiment Analysis on Shakespeare 
+                Sonnets written using Andrej Karpathy's Recurrent Neural Network." I 
+                trained an RNN on all of Shakespeare's Sonnets and achieved 83% valid 
+                words—only 6.6% behind Shakespeare's 89.6% accuracy. This was remarkable 
+                considering the RNN started with no knowledge of English and no human 
+                emotional experience.
+              </p>
+            </div>
 
-      <button className="previous-button" onClick={handleClick}>
-        Go to Home
-      </button>
-      <AnimatedComponents />
+            <div className="project-card">
+              <h3>iOS Development</h3>
+              <p>
+                I worked with the National Railway Museum (NRM) to create "Fallen 
+                Railwaymen," an iOS app that made their database of 11,000 World War 
+                soldiers accessible to a wider audience. The app featured Apple Maps 
+                integration, interactive quizzes, and efficient search functionality 
+                across all iOS devices.
+              </p>
+            </div>
+          </div>
+        </motion.div>
+
+        <motion.button
+          className="back-button"
+          onClick={handleClick}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          variants={itemVariants}
+        >
+          ← Back to Home
+        </motion.button>
+      </motion.div>
     </SpaceContainer>
   );
 };

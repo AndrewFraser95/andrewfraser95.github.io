@@ -1,31 +1,22 @@
-import React, { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import React, { useEffect, useState, useRef } from "react";
+import Asteroid3D from "./Asteroid3D";
 import "@styles/index.css";
-
-function getRandomColor() {
-  const randomInt = (min, max) =>
-    Math.floor(Math.random() * (max - min + 1) + min);
-  const r = randomInt(0, 255);
-  const g = randomInt(0, 255);
-  const b = randomInt(0, 255);
-  return `rgb(${r},${g},${b})`;
-}
 
 const StarField = () => {
   const [stars, setStars] = useState([]);
 
   // Generate random stars
   useEffect(() => {
-    const numStars = 80; // Number of stars
+    const numStars = 50;
     const newStars = [];
 
     for (let i = 0; i < numStars; i++) {
-      const size = Math.random() * 3 + 1;
-      const speed = Math.random() * 5 + 1;
+      const size = Math.random() * 2 + 0.5;
       const left = Math.random() * 100;
       const top = Math.random() * 100;
+      const opacity = 0.3 + Math.random() * 0.7; // Fixed opacity, no animation
 
-      newStars.push({ size, speed, left, top });
+      newStars.push({ size, left, top, opacity });
     }
 
     setStars(newStars);
@@ -34,7 +25,7 @@ const StarField = () => {
   return (
     <div className="stars">
       {stars.map((star, index) => (
-        <motion.div
+        <div
           key={index}
           style={{
             position: "absolute",
@@ -44,110 +35,93 @@ const StarField = () => {
             borderRadius: "50%",
             top: `${star.top}%`,
             left: `${star.left}%`,
+            opacity: star.opacity,
           }}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{
-            duration: star.speed,
-            yoyo: Infinity,
-          }}
-        ></motion.div>
+        />
       ))}
     </div>
   );
 };
 
-const Planet = ({ size, speed, startColor, endColor }) => {
-  const [position, setPosition] = useState({
-    x: window.innerWidth / 2,
-    y: window.innerHeight / 2,
-  });
-
-  const [velocity, setVelocity] = useState({
-    x: (Math.random() - 0.5) * 4,
-    y: (Math.random() - 0.5) * 4,
-  });
-
-  const controls = {
-    scale: {
-      to: 1.2,
-      from: 0.8,
-      yoyo: Infinity,
-      duration: speed,
-    },
-    opacity: {
-      to: 0.5,
-      from: 1,
-      yoyo: Infinity,
-      duration: speed,
-    },
-  };
-
-  const updatePosition = () => {
-    const newVelocity = { ...velocity };
-    const newX = position.x + newVelocity.x;
-    const newY = position.y + newVelocity.y;
-
-    if (newX - size / 2 < 0 || newX + size / 2 > window.innerWidth) {
-      newVelocity.x = -newVelocity.x;
-    }
-
-    if (newY - size / 2 < 0 || newY + size / 2 > window.innerHeight) {
-      newVelocity.y = -newVelocity.y;
-    }
-
-    setPosition({ x: newX, y: newY });
-    setVelocity(newVelocity);
-  };
+const AnimatedComponents = () => {
+  const numAsteroids = 20;
+  const [asteroids, setAsteroids] = useState([]);
+  const asteroidsDataRef = useRef([]);
 
   useEffect(() => {
+    // Initialize asteroids ONCE with fixed properties
+    const initialAsteroids = [];
+    for (let i = 0; i < numAsteroids; i++) {
+      initialAsteroids.push({
+        position: {
+          x: Math.random() * window.innerWidth,
+          y: Math.random() * window.innerHeight,
+        },
+        velocity: {
+          x: (Math.random() - 0.1) * 10,
+          y: (Math.random() - 0.1) * 2.5,
+        },
+        size: 0.4, // Fixed size for all asteroids (will be used in 3D)
+      });
+    }
+    asteroidsDataRef.current = initialAsteroids;
+    setAsteroids(initialAsteroids);
+  }, []);
+
+  useEffect(() => {
+    if (asteroids.length === 0) return;
+
     const interval = setInterval(() => {
-      updatePosition();
-    }, 16);
+      // Update positions in ref (for Three.js to read)
+      asteroidsDataRef.current = asteroidsDataRef.current.map((asteroid) => {
+        let newX = asteroid.position.x + asteroid.velocity.x;
+        let newY = asteroid.position.y + asteroid.velocity.y;
+        let newVelocity = { ...asteroid.velocity };
+
+        // Bounce off walls
+        const asteroidSize = 30; // Fixed pixel size for collision
+        if (
+          newX - asteroidSize < 0 ||
+          newX + asteroidSize > window.innerWidth
+        ) {
+          newVelocity.x = -newVelocity.x;
+          newX = Math.max(
+            asteroidSize,
+            Math.min(window.innerWidth - asteroidSize, newX)
+          );
+        }
+
+        if (
+          newY - asteroidSize < 0 ||
+          newY + asteroidSize > window.innerHeight
+        ) {
+          newVelocity.y = -newVelocity.y;
+          newY = Math.max(
+            asteroidSize,
+            Math.min(window.innerHeight - asteroidSize, newY)
+          );
+        }
+
+        return {
+          ...asteroid,
+          position: { x: newX, y: newY },
+          velocity: newVelocity,
+        };
+      });
+
+      // Update state (triggers re-render but Three.js reads from ref)
+      setAsteroids([...asteroidsDataRef.current]);
+    }, 16); // 60fps update
 
     return () => clearInterval(interval);
-  }, [position, size, velocity]);
-
-  return (
-    <motion.div
-      style={{
-        position: "absolute",
-        width: `${size}px`,
-        height: `${size}px`,
-        background: `linear-gradient(to bottom, ${startColor}, ${endColor})`,
-        borderRadius: "50%",
-        top: position.y - size / 2,
-        left: position.x - size / 2,
-      }}
-      initial={{ opacity: 1, scale: controls.scale[1] }}
-      animate={{ scale: controls.scale[1] }}
-    ></motion.div>
-  );
-};
-
-const AnimatedComponents = () => {
-  const numPlanets = 10;
-
-  const planets = [];
-  for (let i = 0; i < numPlanets; i++) {
-    planets.push(
-      <Planet
-        key={i}
-        size={Math.random() * (i * 50) + 50}
-        speed={Math.random() * 5}
-        startColor={getRandomColor()}
-        endColor={getRandomColor()}
-      />
-    );
-  }
+  }, [asteroids.length]);
 
   return (
     <div>
       <StarField />
-      <div className="planet-container" style={{ margin: 0 }}>
-        {planets.map((planet) => planet)}
-      </div>
+      {asteroids.length > 0 && (
+        <Asteroid3D asteroids={asteroidsDataRef.current} />
+      )}
     </div>
   );
 };
