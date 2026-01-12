@@ -20,7 +20,7 @@
   },
   "scripts": {
     "pre-deploy": "npm run build",
-    "deploy": "echo andrewfraser.com > ./public/CNAME && gh-pages -d build",
+    "deploy": "echo 'andrewfraser.com' > ./public/CNAME && gh-pages -d build",
     "start": "react-app-rewired start",
     "build": "react-app-rewired build",
     "test": "react-app-rewired test",
