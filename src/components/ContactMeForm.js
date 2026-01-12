@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import SubmitFormButton from "./SubmitFormButton";
 import "@styles/ContactMeForm.css"; // Create a CSS file for styling
 
@@ -70,10 +70,7 @@ const ContactMeForm = () => {
             required
           ></textarea>
         </div>
-        <SubmitFormButton
-          buttonText="Submit"
-          onSubmit={handleSubmit}
-        />
+        <SubmitFormButton buttonText="Submit" onSubmit={handleSubmit} />
       </form>
 
       {showModal && (
