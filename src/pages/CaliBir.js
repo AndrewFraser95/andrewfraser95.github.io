@@ -205,34 +205,50 @@ const CaliBir = () => {
           ← Back to Home
         </motion.button>
 
-        <motion.button
-          className="contact-button"
-          onClick={() => navigate("/CaliBir/Privacy")}
-          whileHover={{
-            scale: 1.05,
-            boxShadow: "0 8px 30px rgba(0, 212, 255, 0.4)",
-          }}
-          whileTap={{ scale: 0.95 }}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1.5, duration: 0.5 }}
-        >
-          Privacy
-        </motion.button>
-        <motion.button
-          className="contact-button"
-          onClick={() => navigate("/CaliBir/Terms")}
-          whileHover={{
-            scale: 1.05,
-            boxShadow: "0 8px 30px rgba(0, 212, 255, 0.4)",
-          }}
-          whileTap={{ scale: 0.95 }}
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1.5, duration: 0.5 }}
-        >
-          Terms
-        </motion.button>
+        <div className="legal-buttons-container">
+          <motion.button
+            className="contact-button"
+            onClick={() => navigate("/CaliBir/Privacy")}
+            whileHover={{
+              scale: 1.05,
+              boxShadow: "0 8px 30px rgba(0, 212, 255, 0.4)",
+            }}
+            whileTap={{ scale: 0.95 }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.5, duration: 0.5 }}
+          >
+            Privacy
+          </motion.button>
+          <motion.button
+            className="contact-button"
+            onClick={() => navigate("/CaliBir/Support")}
+            whileHover={{
+              scale: 1.05,
+              boxShadow: "0 8px 30px rgba(0, 212, 255, 0.4)",
+            }}
+            whileTap={{ scale: 0.95 }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.5, duration: 0.5 }}
+          >
+            Support
+          </motion.button>
+          <motion.button
+            className="contact-button"
+            onClick={() => navigate("/CaliBir/Terms")}
+            whileHover={{
+              scale: 1.05,
+              boxShadow: "0 8px 30px rgba(0, 212, 255, 0.4)",
+            }}
+            whileTap={{ scale: 0.95 }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.5, duration: 0.5 }}
+          >
+            Terms
+          </motion.button>
+        </div>
       </motion.div>
     </SpaceContainer>
   );

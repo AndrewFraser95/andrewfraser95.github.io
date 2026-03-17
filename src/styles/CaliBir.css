@@ -452,3 +452,11 @@
     font-size: 0.9em;
   }
 }
+
+.legal-buttons-container {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-top: 40px;
+  flex-wrap: wrap;
+}

@@ -5,6 +5,7 @@ import AboutMe from "./AboutMe";
 import ContactMe from "./ContactMe";
 import Privacy from "./Privacy";
 import Terms from "./Terms";
+import Support from "./Support";
 import CaliBir from "./CaliBir";
 
 const App = () => {
@@ -17,6 +18,7 @@ const App = () => {
         <Route path="CaliBir" element={<CaliBir />} />
         <Route path="CaliBir/Privacy" element={<Privacy />} />
         <Route path="CaliBir/Terms" element={<Terms />} />
+        <Route path="CaliBir/Support" element={<Support />} />
         <Route path="/" element={<Home />} />
       </Routes>
     </Router>
