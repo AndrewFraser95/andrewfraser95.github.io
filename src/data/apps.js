@@ -29,6 +29,24 @@ export const APPS = [
     cta: "Details",
   },
   {
+    id: "forehead",
+    name: "Forehead",
+    type: "web",
+    description:
+      "Hold the phone to your forehead while everyone else acts out the word. Celebrities, animals or your own list. Tilt to score.",
+    href: "/forehead/",
+    cta: "Open",
+  },
+  {
+    id: "corner-pot",
+    name: "Corner Pot",
+    type: "web",
+    description:
+      "A football pub game. Every corner, everyone puts in a stake and the token moves on. Whoever holds it at full time takes the pot.",
+    href: "/corner-pot/",
+    cta: "Open",
+  },
+  {
     id: "escape-rooms",
     name: "Escape rooms",
     type: "escape",

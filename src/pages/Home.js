@@ -74,6 +74,13 @@ const Home = () => {
         <footer className="home-footer">
           <Link to="/AboutMe">About</Link>
           <Link to="/ContactMe">Contact</Link>
+          <a
+            href="https://ko-fi.com/andrewfraserprogrammer"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Tip jar
+          </a>
         </footer>
       </div>
       <AnimatedComponents />
