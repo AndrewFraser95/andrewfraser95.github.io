@@ -20,7 +20,7 @@ export const SpaceContainer = styled.div`
     bottom: 0;
     background: 
       radial-gradient(circle at 20% 50%, rgba(0, 212, 255, 0.1) 0%, transparent 50%),
-      radial-gradient(circle at 80% 80%, rgba(139, 92, 246, 0.1) 0%, transparent 50%);
+      radial-gradient(circle at 80% 80%, rgba(0, 119, 182, 0.1) 0%, transparent 50%);
     pointer-events: none;
   }
 `;

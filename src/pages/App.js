@@ -7,6 +7,7 @@ import Privacy from "./Privacy";
 import Terms from "./Terms";
 import Support from "./Support";
 import CaliBir from "./CaliBir";
+import EscapeRooms from "./EscapeRooms";
 
 const App = () => {
   return (
@@ -16,6 +17,7 @@ const App = () => {
         <Route path="AboutMe" element={<AboutMe />} />
         <Route path="ContactMe" element={<ContactMe />} />
         <Route path="CaliBir" element={<CaliBir />} />
+        <Route path="EscapeRooms" element={<EscapeRooms />} />
         <Route path="CaliBir/Privacy" element={<Privacy />} />
         <Route path="CaliBir/Terms" element={<Terms />} />
         <Route path="CaliBir/Support" element={<Support />} />

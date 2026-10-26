@@ -54,7 +54,6 @@ const CaliBir = () => {
 
         <motion.div className="calibir-features" variants={itemVariants}>
           <div className="feature-card">
-            <div className="feature-icon">📱</div>
             <h3>Less Screen Time, More Real Time</h3>
             <p>
               Get birthday reminders and event notifications without falling
@@ -63,7 +62,6 @@ const CaliBir = () => {
           </div>
 
           <div className="feature-card">
-            <div className="feature-icon">🎂</div>
             <h3>Never Miss a Birthday Again</h3>
             <p>
               Automatic birthday reminders sync with your calendar. Stay
@@ -72,7 +70,6 @@ const CaliBir = () => {
           </div>
 
           <div className="feature-card">
-            <div className="feature-icon">🎉</div>
             <h3>Plan Events That Actually Happen</h3>
             <p>
               Create and manage events with friends. Share photos, coordinate
@@ -81,7 +78,6 @@ const CaliBir = () => {
           </div>
 
           <div className="feature-card">
-            <div className="feature-icon">👥</div>
             <h3>Real Friends, Real Connections</h3>
             <p>
               Connect with people you actually know. No algorithms, no ads, just
@@ -90,7 +86,6 @@ const CaliBir = () => {
           </div>
 
           <div className="feature-card">
-            <div className="feature-icon">👨‍👩‍👧‍👦</div>
             <h3>Build Your Community Groups</h3>
             <p>
               Create and join groups with your community—family, friends, clubs,
@@ -100,7 +95,6 @@ const CaliBir = () => {
           </div>
 
           <div className="feature-card coming-soon">
-            <div className="feature-icon">✨</div>
             <h3>More Features Coming Soon</h3>
             <p>
               We're constantly working on new features to help you stay

@@ -19,7 +19,7 @@
   font-size: 3em;
   margin: 0 0 10px 0;
   color: #fff;
-  background: linear-gradient(135deg, #00d4ff 0%, #8b5cf6 100%);
+  background: linear-gradient(135deg, #00d4ff 0%, #0077b6 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -66,25 +66,25 @@
 }
 
 .project-card {
-  background: rgba(139, 92, 246, 0.1);
+  background: rgba(0, 119, 182, 0.1);
   padding: 25px;
   border-radius: 10px;
   margin-bottom: 20px;
-  border: 1px solid rgba(139, 92, 246, 0.3);
+  border: 1px solid rgba(0, 119, 182, 0.3);
   transition: all 0.3s ease;
 }
 
 .project-card:hover {
-  background: rgba(139, 92, 246, 0.15);
-  border-color: rgba(139, 92, 246, 0.5);
+  background: rgba(0, 119, 182, 0.15);
+  border-color: rgba(0, 119, 182, 0.5);
   transform: translateX(5px);
-  box-shadow: 0 4px 15px rgba(139, 92, 246, 0.2);
+  box-shadow: 0 4px 15px rgba(0, 119, 182, 0.2);
 }
 
 .project-card h3 {
   font-size: 1.5em;
   margin: 0 0 15px 0;
-  color: #8b5cf6;
+  color: #0077b6;
 }
 
 .project-card p {
@@ -95,7 +95,7 @@
 }
 
 .back-button {
-  background: linear-gradient(135deg, #00d4ff 0%, #8b5cf6 100%);
+  background: linear-gradient(135deg, #00d4ff 0%, #0077b6 100%);
   color: white;
   padding: 15px 40px;
   font-size: 1.1em;
@@ -136,7 +136,7 @@
 }
 
 .about-container::-webkit-scrollbar-thumb:hover {
-  background-color: #8b5cf6;
+  background-color: #0077b6;
 }
 
 /* Responsive design */
