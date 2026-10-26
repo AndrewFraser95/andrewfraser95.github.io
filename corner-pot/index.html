@@ -50,6 +50,14 @@
   #overlay { position:fixed; inset:0; background:rgba(14,14,14,.96); display:none; flex-direction:column; align-items:center; justify-content:center; gap:16px; padding:24px; text-align:center; z-index:5; }
   #overlay.on { display:flex; }
   .win { font-family:var(--serif); font-style:italic; font-size:min(16vw, 14vh); line-height:1.05; margin:0; }
+  .receipt { width:100%; max-width:340px; background:var(--cream); color:#161616; padding:18px 18px 14px; font-family:"Courier New",ui-monospace,monospace;
+    font-size:15px; text-align:left; border-radius:2px; box-shadow:0 8px 30px rgba(0,0,0,.5); }
+  .receipt h3 { margin:0 0 2px; text-align:center; letter-spacing:4px; font-size:16px; }
+  .receipt .note { text-align:center; font-size:12px; opacity:.6; margin-bottom:8px; }
+  .receipt .ln { display:flex; justify-content:space-between; gap:12px; padding:3px 0; }
+  .receipt .ln span:first-child { overflow-wrap:anywhere; }
+  .receipt .rule { border-top:1.5px dashed #161616; margin:8px 0; }
+  .receipt .tot { font-weight:700; font-size:17px; }
   .amount { font-family:var(--serif); font-size:64px; margin:0; }
 </style>
 </head>
@@ -58,7 +66,7 @@
 <div id="setup" class="screen active">
   <a class="back" href="/">All apps</a>
   <h1>Corner Pot</h1>
-  <p class="sub">Every time the trigger happens, everyone puts in a stake and the token moves on. Whoever holds it at the end takes the pot.</p>
+  <p class="sub">Each time the trigger happens, whoever holds the token puts in a stake and passes it on. At the end, the holder collects the pot and you get a receipt of who owes what.</p>
   <p class="label">Players</p>
   <div class="players" id="players"></div>
   <div class="row">
@@ -67,7 +75,7 @@
   </div>
   <p class="label">Trigger</p>
   <div class="row" id="triggers"></div>
-  <p class="label">Stake each</p>
+  <p class="label">Stake per trigger</p>
   <div class="row" id="stakes"></div>
   <p class="label">Game</p>
   <div class="row" id="modes"></div>
@@ -107,7 +115,7 @@
   <div class="label">Whistle</div>
   <p class="win" id="oName"></p>
   <p>wins</p>
-  <p class="amount" id="oAmount"></p>
+  <div id="oReceipt" style="width:100%;display:flex;justify-content:center"></div>
   <button class="big" id="nextRound">Next round</button>
 </div>
 
@@ -119,9 +127,10 @@ const $ = id => document.getElementById(id);
 const gbp = p => '£' + (p / 100).toFixed(2);
 const KEY = 'cornerpot-v1';
 const fresh = () => ({ players: ['Player 1', 'Player 2', 'Player 3', 'Player 4'], trigger: 'Corner', stake: 20, drink: false, mode: 'full',
-  phase: 'setup', pot: 0, holder: 0, events: 0, history: [], roundEnd: null });
+  phase: 'setup', pot: 0, holder: 0, events: 0, contrib: [], history: [], roundEnd: null });
 let S = fresh();
 try { const x = JSON.parse(localStorage.getItem(KEY)); if (x && x.players) S = Object.assign(fresh(), x); } catch {}
+if (!Array.isArray(S.contrib) || S.contrib.length !== S.players.length) S.contrib = S.players.map(() => 0);
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch {} };
 const show = id => document.querySelectorAll('.screen').forEach(s => s.classList.toggle('active', s.id === id));
 
@@ -141,7 +150,7 @@ function renderSetup() {
   row('modes', Object.keys(MODES), S.mode, v => MODES[v], v => S.mode = v);
   $('modeNote').textContent = S.mode === 'full'
     ? 'The token keeps moving until you tap Full time.'
-    : 'A hidden whistle goes off at a random time (5 to 15 minutes). Whoever holds the token wins that pot, then it resets.';
+    : 'A hidden whistle goes off at a random time (5 to 15 minutes). Whoever holds the token collects that pot and gets the receipt, then it resets.';
   $('drink').checked = S.drink;
 }
 
@@ -161,7 +170,7 @@ function scheduleWhistle() {
 function start() {
   if (S.players.length < 2) { $('msg').textContent = 'Add at least two players.'; return; }
   $('msg').textContent = '';
-  Object.assign(S, { phase: 'game', pot: 0, holder: 0, events: 0, history: [], roundEnd: null });
+  Object.assign(S, { phase: 'game', pot: 0, holder: 0, events: 0, contrib: S.players.map(() => 0), history: [], roundEnd: null });
   if (S.mode === 'roulette') scheduleWhistle();
   save(); renderGame(); show('game');
 }
@@ -169,7 +178,7 @@ function start() {
 function renderGame() {
   const n = S.players.length;
   $('pot').textContent = gbp(S.pot);
-  $('meta').textContent = S.events + ' ' + S.trigger.toLowerCase() + (S.events === 1 ? '' : 's') + ' · ' + gbp(S.stake * n) + ' per trigger';
+  $('meta').textContent = S.events + ' ' + S.trigger.toLowerCase() + (S.events === 1 ? '' : 's') + ' · ' + gbp(S.stake) + ' each time';
   $('holder').textContent = S.players[S.holder];
   $('next').textContent = 'Next: ' + S.players[(S.holder + 1) % n];
   $('fire').textContent = S.trigger + '!';
@@ -180,9 +189,9 @@ function renderGame() {
 
 function fire() {
   const n = S.players.length, prev = S.players[S.holder];
-  S.history.push({ holder: S.holder, pot: S.pot, events: S.events });
-  S.pot += S.stake * n; S.events++; S.holder = (S.holder + 1) % n;
-  $('drinkMsg').textContent = S.drink ? prev + ' drinks' : '';
+  S.history.push({ holder: S.holder, pot: S.pot, events: S.events, contrib: S.contrib.slice() });
+  S.contrib[S.holder] += S.stake; S.pot += S.stake; S.events++; S.holder = (S.holder + 1) % n;
+  $('drinkMsg').textContent = (S.drink ? prev + ' drinks. ' : '') + prev + ' puts in ' + gbp(S.stake);
   try { navigator.vibrate && navigator.vibrate(40); } catch {}
   save(); renderGame();
 }
@@ -190,9 +199,28 @@ function fire() {
 function undo() {
   const h = S.history.pop();
   if (!h) return;
-  Object.assign(S, { holder: h.holder, pot: h.pot, events: h.events });
+  Object.assign(S, { holder: h.holder, pot: h.pot, events: h.events, contrib: h.contrib });
   $('drinkMsg').textContent = '';
   save(); renderGame();
+}
+
+function receipt() {
+  const win = S.holder, winner = S.players[win], own = S.contrib[win] || 0;
+  const box = document.createElement('div'); box.className = 'receipt';
+  const mk = (tag, cls, txt) => { const e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; };
+  const ln = (l, rt, cls) => { const d = mk('div', 'ln' + (cls ? ' ' + cls : '')); d.append(mk('span', '', l), mk('span', '', rt)); return d; };
+  box.append(mk('h3', '', 'RECEIPT'), mk('div', 'note', S.events + ' ' + S.trigger.toLowerCase() + (S.events === 1 ? '' : 's') + ' at ' + gbp(S.stake)));
+  let owed = 0;
+  S.players.forEach((n, i) => {
+    if (i === win || !S.contrib[i]) return;
+    owed += S.contrib[i];
+    box.append(ln(n + ' owes ' + winner, gbp(S.contrib[i])));
+  });
+  if (!owed) box.append(ln('Nobody owes anything', ''));
+  box.append(mk('div', 'rule'), ln('Pot', gbp(S.pot)));
+  if (own) box.append(ln(winner + ' put in', '-' + gbp(own)));
+  box.append(ln('Owed to ' + winner, gbp(owed), 'tot'));
+  return box;
 }
 
 function finish() {
@@ -203,8 +231,7 @@ function finish() {
     mk('div', 'label', 'Full time'),
     mk('p', 'win', S.players[S.holder]),
     mk('p', '', 'takes the pot'),
-    mk('p', 'amount', gbp(S.pot)),
-    mk('p', 'sub', S.events + ' ' + S.trigger.toLowerCase() + (S.events === 1 ? '' : 's') + ' · ' + S.players.length + ' players · ' + gbp(S.stake) + ' each time')
+    receipt()
   );
   const again = mk('button', 'big', 'New game'); again.onclick = () => { S.phase = 'setup'; save(); renderSetup(); show('setup'); };
   $('endBody').append(again);
@@ -215,13 +242,13 @@ function checkWhistle() {
   if (S.phase !== 'game' || S.mode !== 'roulette' || !S.roundEnd || Date.now() < S.roundEnd) return;
   S.roundEnd = null; save();
   $('oName').textContent = S.players[S.holder];
-  $('oAmount').textContent = gbp(S.pot);
+  $('oReceipt').innerHTML = ''; $('oReceipt').appendChild(receipt());
   $('overlay').classList.add('on');
   try { navigator.vibrate && navigator.vibrate([200, 100, 200]); } catch {}
 }
 $('nextRound').onclick = () => {
   $('overlay').classList.remove('on');
-  Object.assign(S, { pot: 0, events: 0, history: [] }); $('drinkMsg').textContent = '';
+  Object.assign(S, { pot: 0, events: 0, contrib: S.players.map(() => 0), history: [] }); $('drinkMsg').textContent = '';
   scheduleWhistle(); save(); renderGame();
 };
 setInterval(checkWhistle, 1000);
