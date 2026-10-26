@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Forehead">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="theme-color" content="#0e0e0e">
+<title>Forehead</title>
+<style>
+  :root { --bg:#0e0e0e; --cream:#f4efe6; --gold:#c8a96a; --good:#2f8f5b; --pass:#c9772b; --serif:"Didot","Bodoni 72",Georgia,serif; }
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  [hidden] { display:none !important; }
+  html, body { margin:0; position:fixed; top:0; left:0; width:100%; height:100%; background:var(--bg); color:var(--cream);
+    font-family:-apple-system, system-ui, sans-serif; overflow:hidden; }
+  .screen { position:fixed; top:0; left:0; width:100%; height:100%; display:none; flex-direction:column; align-items:center;
+    padding:calc(env(safe-area-inset-top) + 20px) 24px calc(env(safe-area-inset-bottom) + 20px); gap:16px; text-align:center; overflow-y:auto; }
+  .screen.active { display:flex; }
+  #setup > :first-child { margin-top:auto; }
+  #setup > :last-child { margin-bottom:auto; }
+  h1 { margin:0; font-family:var(--serif); font-style:italic; font-weight:400; font-size:48px; }
+  .sub { margin:0; opacity:.7; max-width:320px; line-height:1.4; }
+  .label { margin:8px 0 0; opacity:.6; font-size:13px; letter-spacing:3px; text-transform:uppercase; }
+  .row { display:flex; gap:10px; flex-wrap:wrap; justify-content:center; }
+  button { font:inherit; color:var(--cream); background:transparent; border:1.5px solid rgba(244,239,230,.35); border-radius:12px;
+    padding:13px 20px; font-size:19px; font-weight:600; }
+  button.sel { background:var(--cream); color:#111; border-color:var(--cream); }
+  button.big { background:var(--gold); color:#111; border:0; font-size:26px; font-weight:700; padding:18px 52px; border-radius:60px; margin-top:8px; }
+  textarea { width:100%; max-width:340px; height:130px; font:inherit; font-size:17px; color:var(--cream); background:rgba(244,239,230,.08);
+    border:1.5px solid rgba(244,239,230,.35); border-radius:12px; padding:12px; outline:none; resize:none; }
+  textarea:focus { border-color:var(--gold); }
+  .tip { font-size:13px; opacity:.55; color:var(--cream); }
+  .back { font-size:13px; opacity:.55; color:var(--cream); text-decoration:none; }
+
+  #play { padding:0; gap:0; justify-content:center; transition:background .15s; }
+  #play.good { background:var(--good); }
+  #play.skip { background:var(--pass); }
+  #bar { position:absolute; top:0; left:0; height:8px; background:var(--gold); width:100%; transition:width 1s linear; }
+  #clock { position:absolute; top:calc(env(safe-area-inset-top) + 16px); right:20px; font-size:22px; font-weight:700; opacity:.8; }
+  #score { position:absolute; top:calc(env(safe-area-inset-top) + 16px); left:20px; font-size:22px; font-weight:700; opacity:.8; }
+  #word { font-family:var(--serif); font-weight:400; font-size:min(15vw, 24vh); line-height:1.05; padding:0 6vw; overflow-wrap:anywhere; }
+  #big { font-size:min(18vw, 30vh); font-weight:800; }
+  #hint { position:absolute; bottom:calc(env(safe-area-inset-bottom) + 70px); left:0; right:0; opacity:.55; font-size:15px; }
+  .tapzones { position:absolute; left:0; right:0; bottom:calc(env(safe-area-inset-bottom) + 12px); display:flex; justify-content:space-between; padding:0 16px; }
+  .tapzones button { font-size:15px; padding:10px 18px; min-width:110px; }
+
+  #end ul { list-style:none; margin:0; padding:0; width:100%; max-width:340px; text-align:left; }
+  #end li { padding:8px 0; border-bottom:1px solid rgba(244,239,230,.12); display:flex; justify-content:space-between; gap:12px; }
+  #end li.c span:last-child { color:#6fcf97; }
+  #end li.p span:last-child { color:#e6a15a; opacity:.8; }
+  #finalScore { font-family:var(--serif); font-size:80px; line-height:1; margin:0; }
+</style>
+</head>
+<body>
+
+<div id="setup" class="screen active">
+  <a class="back" href="/">All apps</a>
+  <h1>Forehead</h1>
+  <p class="sub">Hold the phone to your forehead, screen facing out. Everyone else acts it out. Tilt down when you get it, tilt up to pass.</p>
+  <p class="label">Deck</p>
+  <div class="row" id="decks"></div>
+  <textarea id="custom" placeholder="One per line&#10;e.g. Uncle Dave&#10;Chicken tikka masala" hidden></textarea>
+  <p class="label">Time</p>
+  <div class="row" id="times"></div>
+  <button class="big" id="start">Start</button>
+  <p class="sub" id="msg"></p>
+  <a class="tip" href="https://ko-fi.com/andrewfraserprogrammer" target="_blank" rel="noopener">Enjoying this? Leave a tip</a>
+</div>
+
+<div id="play" class="screen">
+  <div id="bar"></div>
+  <div id="score">0</div>
+  <div id="clock"></div>
+  <div id="word"></div>
+  <div id="hint"></div>
+  <div class="tapzones" id="tapzones" hidden>
+    <button id="tapPass">Pass</button>
+    <button id="tapGood">Correct</button>
+  </div>
+</div>
+
+<div id="end" class="screen">
+  <h1>Time</h1>
+  <p id="finalScore">0</p>
+  <p class="sub">correct</p>
+  <ul id="results"></ul>
+  <div class="row">
+    <button class="big" id="again">Play again</button>
+  </div>
+  <button id="change">Change deck</button>
+</div>
+
+<script>
+const DECKS = {
+  Celebrities: ["Taylor Swift","Tom Hanks","Beyoncé","Elon Musk","Gordon Ramsay","David Beckham","Adele","Barack Obama","Ed Sheeran","Dwayne Johnson","Rihanna","Leonardo DiCaprio","Oprah Winfrey","Lionel Messi","Cristiano Ronaldo","Harry Styles","Kim Kardashian","Jennifer Lawrence","Brad Pitt","Taylor Lautner","Margot Robbie","Ryan Reynolds","Simon Cowell","Lady Gaga","Will Smith","Emma Watson","Kanye West","Bruno Mars","Keanu Reeves","Zendaya","Tom Cruise","Daniel Craig","Prince William","Stormzy","Idris Elba","Dua Lipa","Michael Jackson","Marilyn Monroe","Albert Einstein","Freddie Mercury","Arnold Schwarzenegger","Mr Bean","Bear Grylls","Davina McCall","Jeremy Clarkson","Ant and Dec","Paul McCartney","Serena Williams","Usain Bolt","Mo Farah","Gary Lineker","Kate Middleton","Billie Eilish","Chris Hemsworth","Jackie Chan","Morgan Freeman","Judi Dench","Dolly Parton","Elvis Presley","Madonna"],
+  Animals: ["Elephant","Giraffe","Penguin","Kangaroo","Octopus","Flamingo","Gorilla","Hippo","Crocodile","Sloth","Koala","Chameleon","Peacock","Dolphin","Shark","Lion","Tiger","Panda","Zebra","Camel","Owl","Bat","Hedgehog","Squirrel","Seal","Walrus","Polar bear","Rhino","Cheetah","Monkey","Parrot","Tortoise","Snake","Spider","Lobster","Jellyfish","Duck","Chicken","Cow","Pig","Sheep","Horse","Llama","Wolf","Fox","Otter","Beaver","Meerkat","Turkey","Seahorse"]
+};
+const TIMES = [30, 60, 90];
+const $ = id => document.getElementById(id);
+const store = { get(k,d){ try { return localStorage.getItem(k) ?? d; } catch { return d; } }, set(k,v){ try { localStorage.setItem(k,v); } catch {} } };
+let deckName = store.get('deck', 'Celebrities'), seconds = +store.get('time', 60), custom = store.get('custom', '');
+let queue = [], current = '', score = 0, log = [], left = 0, timer = null, armed = false, locked = false, playing = false, tilt = false, gotEvent = false;
+
+const names = () => [...Object.keys(DECKS), 'Custom'];
+function render() {
+  $('decks').innerHTML = ''; $('times').innerHTML = '';
+  names().forEach(n => { const b = document.createElement('button'); b.textContent = n; b.className = n === deckName ? 'sel' : '';
+    b.onclick = () => { deckName = n; store.set('deck', n); render(); }; $('decks').appendChild(b); });
+  TIMES.forEach(t => { const b = document.createElement('button'); b.textContent = t + 's'; b.className = t === seconds ? 'sel' : '';
+    b.onclick = () => { seconds = t; store.set('time', t); render(); }; $('times').appendChild(b); });
+  $('custom').hidden = deckName !== 'Custom';
+  $('custom').value = custom;
+}
+$('custom').oninput = e => { custom = e.target.value; store.set('custom', custom); };
+
+function words() {
+  const list = deckName === 'Custom' ? custom.split('\n').map(s => s.trim()).filter(Boolean) : DECKS[deckName];
+  return list.slice();
+}
+function shuffle(a) { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+function nextWord() {
+  if (!queue.length) queue = shuffle(words());
+  current = queue.pop();
+  $('word').textContent = current;
+}
+
+function show(id) { document.querySelectorAll('.screen').forEach(s => s.classList.toggle('active', s.id === id)); }
+
+// Screen-normal pointing up (+1) or down (-1), independent of how the phone is rotated.
+function upness(e) {
+  const b = (e.beta || 0) * Math.PI / 180, g = (e.gamma || 0) * Math.PI / 180;
+  return Math.cos(b) * Math.cos(g);
+}
+function onOrient(e) {
+  if (e.beta == null) return;
+  gotEvent = true;
+  if (!playing || locked) return;
+  const v = upness(e);
+  if (Math.abs(v) < 0.3) { armed = true; return; }
+  if (!armed) return;
+  if (v < -0.55) answer(true);
+  else if (v > 0.55) answer(false);
+}
+
+function answer(correct) {
+  if (!playing || locked) return;
+  locked = true; armed = false;
+  log.push({ w: current, ok: correct });
+  if (correct) score++;
+  $('score').textContent = score;
+  $('play').className = 'screen active ' + (correct ? 'good' : 'skip');
+  $('word').textContent = correct ? 'Correct' : 'Pass';
+  $('word').style.fontWeight = '800';
+  try { navigator.vibrate && navigator.vibrate(correct ? 80 : 30); } catch {}
+  setTimeout(() => {
+    if (!playing) return;
+    $('play').className = 'screen active';
+    $('word').style.fontWeight = '';
+    nextWord(); locked = false;
+  }, 800);
+}
+
+async function start() {
+  $('msg').textContent = '';
+  if (!words().length) { $('msg').textContent = 'Add some words first.'; return; }
+  try {
+    if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+      const r = await DeviceOrientationEvent.requestPermission();
+      tilt = r === 'granted';
+    } else tilt = true;
+  } catch { tilt = false; }
+  addEventListener('deviceorientation', onOrient);
+  try { navigator.wakeLock?.request('screen'); } catch {}
+  queue = []; score = 0; log = []; locked = true; playing = false; armed = false; gotEvent = false;
+  $('score').textContent = 0; $('clock').textContent = ''; $('bar').style.transition = 'none'; $('bar').style.width = '100%';
+  $('play').className = 'screen active'; show('play');
+  $('hint').textContent = 'Put the phone on your forehead';
+  $('tapzones').hidden = true;
+  for (let c = 4; c > 0; c--) {
+    $('word').textContent = c;
+    $('word').style.fontWeight = '800';
+    await new Promise(r => setTimeout(r, 1000));
+  }
+  $('word').style.fontWeight = '';
+  left = seconds; playing = true; locked = false;
+  $('clock').textContent = left;
+  nextWord();
+  $('hint').textContent = tilt ? 'Tilt down: correct. Tilt up: pass.' : 'Friends: tap Correct or Pass';
+  // If no tilt readings arrive (desktop, permission denied), fall back to tap buttons.
+  setTimeout(() => { if (playing && !gotEvent) { $('tapzones').hidden = false; $('hint').textContent = 'Tap Correct or Pass'; } }, 1500);
+  $('tapzones').hidden = tilt;
+  requestAnimationFrame(() => { $('bar').style.transition = 'width ' + seconds + 's linear'; $('bar').style.width = '0%'; });
+  timer = setInterval(() => {
+    left--; $('clock').textContent = Math.max(left, 0);
+    if (left <= 0) finish();
+  }, 1000);
+}
+
+function finish() {
+  clearInterval(timer); playing = false; locked = true;
+  removeEventListener('deviceorientation', onOrient);
+  $('finalScore').textContent = score;
+  $('results').innerHTML = '';
+  log.forEach(x => { const li = document.createElement('li'); li.className = x.ok ? 'c' : 'p';
+    li.innerHTML = '<span></span><span>' + (x.ok ? 'Correct' : 'Pass') + '</span>'; li.firstChild.textContent = x.w; $('results').appendChild(li); });
+  show('end');
+}
+
+$('start').onclick = start;
+$('again').onclick = start;
+$('change').onclick = () => show('setup');
+$('tapGood').onclick = () => answer(true);
+$('tapPass').onclick = () => answer(false);
+render();
+</script>
+</body>
+</html>

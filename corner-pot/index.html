@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Corner Pot">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="theme-color" content="#0e0e0e">
+<title>Corner Pot</title>
+<style>
+  :root { --bg:#0e0e0e; --cream:#f4efe6; --gold:#c8a96a; --serif:"Didot","Bodoni 72",Georgia,serif; }
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  [hidden] { display:none !important; }
+  html, body { margin:0; position:fixed; top:0; left:0; width:100%; height:100%; background:var(--bg); color:var(--cream);
+    font-family:-apple-system, system-ui, sans-serif; overflow:hidden; }
+  .screen { position:fixed; top:0; left:0; width:100%; height:100%; display:none; flex-direction:column; align-items:center;
+    padding:calc(env(safe-area-inset-top) + 20px) 24px calc(env(safe-area-inset-bottom) + 20px); gap:14px; text-align:center; overflow-y:auto; }
+  .screen.active { display:flex; }
+  #setup > :first-child { margin-top:auto; }
+  #setup > :last-child { margin-bottom:auto; }
+  h1 { margin:0; font-family:var(--serif); font-style:italic; font-weight:400; font-size:46px; }
+  .sub { margin:0; opacity:.7; max-width:330px; line-height:1.4; }
+  .label { margin:8px 0 0; opacity:.6; font-size:13px; letter-spacing:3px; text-transform:uppercase; }
+  .row { display:flex; gap:8px; flex-wrap:wrap; justify-content:center; }
+  button { font:inherit; color:var(--cream); background:transparent; border:1.5px solid rgba(244,239,230,.35); border-radius:12px;
+    padding:12px 18px; font-size:18px; font-weight:600; }
+  button.sel { background:var(--cream); color:#111; border-color:var(--cream); }
+  button.big { background:var(--gold); color:#111; border:0; font-size:24px; font-weight:700; padding:16px 48px; border-radius:60px; }
+  input[type=text] { font:inherit; font-size:18px; color:var(--cream); background:rgba(244,239,230,.08); border:1.5px solid rgba(244,239,230,.35);
+    border-radius:12px; padding:12px 14px; outline:none; width:200px; text-align:center; }
+  input[type=text]:focus { border-color:var(--gold); }
+  .players { display:flex; flex-wrap:wrap; gap:8px; justify-content:center; max-width:340px; }
+  .chip { display:flex; align-items:center; gap:8px; border:1.5px solid rgba(244,239,230,.35); border-radius:999px; padding:8px 8px 8px 16px; font-size:17px; }
+  .chip button { padding:0 10px; border:0; font-size:20px; opacity:.6; }
+  .tip, .back { font-size:13px; opacity:.55; color:var(--cream); }
+  .back { text-decoration:none; }
+  .switch { display:flex; align-items:center; gap:12px; font-size:17px; }
+
+  #game { justify-content:space-between; }
+  #pot { font-family:var(--serif); font-size:78px; line-height:1; margin:4px 0 0; }
+  #meta { opacity:.6; font-size:14px; letter-spacing:2px; text-transform:uppercase; }
+  #holderLabel { opacity:.6; font-size:13px; letter-spacing:3px; text-transform:uppercase; margin-top:12px; }
+  #holder { font-family:var(--serif); font-style:italic; font-size:min(16vw, 14vh); line-height:1.05; margin:0; overflow-wrap:anywhere; }
+  #next { opacity:.6; }
+  #drinkMsg { min-height:1.4em; color:var(--gold); font-weight:600; }
+  #fire { width:100%; max-width:340px; font-size:30px; padding:26px; border-radius:20px; background:var(--gold); color:#111; border:0; font-weight:800; }
+  #fire:active { transform:scale(.97); }
+  .bottom { display:flex; gap:10px; }
+  #overlay { position:fixed; inset:0; background:rgba(14,14,14,.96); display:none; flex-direction:column; align-items:center; justify-content:center; gap:16px; padding:24px; text-align:center; z-index:5; }
+  #overlay.on { display:flex; }
+  .win { font-family:var(--serif); font-style:italic; font-size:min(16vw, 14vh); line-height:1.05; margin:0; }
+  .amount { font-family:var(--serif); font-size:64px; margin:0; }
+</style>
+</head>
+<body>
+
+<div id="setup" class="screen active">
+  <a class="back" href="/">All apps</a>
+  <h1>Corner Pot</h1>
+  <p class="sub">Every time the trigger happens, everyone puts in a stake and the token moves on. Whoever holds it at the end takes the pot.</p>
+  <p class="label">Players</p>
+  <div class="players" id="players"></div>
+  <div class="row">
+    <input type="text" id="newName" placeholder="Add a name" maxlength="16" autocomplete="off" autocapitalize="words">
+    <button id="addBtn">Add</button>
+  </div>
+  <p class="label">Trigger</p>
+  <div class="row" id="triggers"></div>
+  <p class="label">Stake each</p>
+  <div class="row" id="stakes"></div>
+  <p class="label">Game</p>
+  <div class="row" id="modes"></div>
+  <p class="sub" id="modeNote"></p>
+  <label class="switch"><input type="checkbox" id="drink"> Holder drinks on each trigger</label>
+  <button class="big" id="start">Start</button>
+  <p class="sub" id="msg"></p>
+  <p class="sub" style="font-size:12px;opacity:.45">Tracks the pot only. No money moves in the app. Please play responsibly.</p>
+  <a class="tip" href="https://ko-fi.com/andrewfraserprogrammer" target="_blank" rel="noopener">Enjoying this? Leave a tip</a>
+</div>
+
+<div id="game" class="screen">
+  <div>
+    <p id="pot">£0.00</p>
+    <div id="meta"></div>
+  </div>
+  <div>
+    <div id="holderLabel">Holding the token</div>
+    <p id="holder"></p>
+    <div id="next"></div>
+  </div>
+  <div style="width:100%;display:flex;flex-direction:column;align-items:center;gap:14px">
+    <div id="drinkMsg"></div>
+    <button id="fire"></button>
+    <div class="bottom">
+      <button id="undo">Undo</button>
+      <button id="finish">Full time</button>
+    </div>
+  </div>
+</div>
+
+<div id="end" class="screen" style="justify-content:center">
+  <div id="endBody" style="display:contents"></div>
+</div>
+
+<div id="overlay">
+  <div class="label">Whistle</div>
+  <p class="win" id="oName"></p>
+  <p>wins</p>
+  <p class="amount" id="oAmount"></p>
+  <button class="big" id="nextRound">Next round</button>
+</div>
+
+<script>
+const TRIGGERS = ['Corner', 'Throw-in', 'Goal', 'Foul'];
+const STAKES = [10, 20, 50, 100];
+const MODES = { full: 'Full time', roulette: 'Pub roulette' };
+const $ = id => document.getElementById(id);
+const gbp = p => '£' + (p / 100).toFixed(2);
+const KEY = 'cornerpot-v1';
+const fresh = () => ({ players: ['Player 1', 'Player 2', 'Player 3', 'Player 4'], trigger: 'Corner', stake: 20, drink: false, mode: 'full',
+  phase: 'setup', pot: 0, holder: 0, events: 0, history: [], roundEnd: null });
+let S = fresh();
+try { const x = JSON.parse(localStorage.getItem(KEY)); if (x && x.players) S = Object.assign(fresh(), x); } catch {}
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch {} };
+const show = id => document.querySelectorAll('.screen').forEach(s => s.classList.toggle('active', s.id === id));
+
+function renderSetup() {
+  $('players').innerHTML = '';
+  S.players.forEach((n, i) => {
+    const c = document.createElement('div'); c.className = 'chip';
+    const t = document.createElement('span'); t.textContent = n;
+    const x = document.createElement('button'); x.textContent = '×'; x.setAttribute('aria-label', 'Remove ' + n);
+    x.onclick = () => { S.players.splice(i, 1); save(); renderSetup(); };
+    c.append(t, x); $('players').appendChild(c);
+  });
+  const row = (id, items, cur, label, on) => { $(id).innerHTML = ''; items.forEach(v => { const b = document.createElement('button');
+    b.textContent = label(v); b.className = v === cur ? 'sel' : ''; b.onclick = () => { on(v); save(); renderSetup(); }; $(id).appendChild(b); }); };
+  row('triggers', TRIGGERS, S.trigger, v => v, v => S.trigger = v);
+  row('stakes', STAKES, S.stake, v => v < 100 ? v + 'p' : '£' + v / 100, v => S.stake = v);
+  row('modes', Object.keys(MODES), S.mode, v => MODES[v], v => S.mode = v);
+  $('modeNote').textContent = S.mode === 'full'
+    ? 'The token keeps moving until you tap Full time.'
+    : 'A hidden whistle goes off at a random time (5 to 15 minutes). Whoever holds the token wins that pot, then it resets.';
+  $('drink').checked = S.drink;
+}
+
+function addPlayer() {
+  const v = $('newName').value.trim();
+  if (!v) return;
+  S.players.push(v); $('newName').value = ''; save(); renderSetup();
+}
+$('addBtn').onclick = addPlayer;
+$('newName').onkeydown = e => { if (e.key === 'Enter') addPlayer(); };
+$('drink').onchange = e => { S.drink = e.target.checked; save(); };
+
+function scheduleWhistle() {
+  S.roundEnd = Date.now() + (5 + Math.random() * 10) * 60000;
+}
+
+function start() {
+  if (S.players.length < 2) { $('msg').textContent = 'Add at least two players.'; return; }
+  $('msg').textContent = '';
+  Object.assign(S, { phase: 'game', pot: 0, holder: 0, events: 0, history: [], roundEnd: null });
+  if (S.mode === 'roulette') scheduleWhistle();
+  save(); renderGame(); show('game');
+}
+
+function renderGame() {
+  const n = S.players.length;
+  $('pot').textContent = gbp(S.pot);
+  $('meta').textContent = S.events + ' ' + S.trigger.toLowerCase() + (S.events === 1 ? '' : 's') + ' · ' + gbp(S.stake * n) + ' per trigger';
+  $('holder').textContent = S.players[S.holder];
+  $('next').textContent = 'Next: ' + S.players[(S.holder + 1) % n];
+  $('fire').textContent = S.trigger + '!';
+  $('undo').disabled = !S.history.length;
+  $('undo').style.opacity = S.history.length ? 1 : .4;
+  $('finish').hidden = S.mode === 'roulette';
+}
+
+function fire() {
+  const n = S.players.length, prev = S.players[S.holder];
+  S.history.push({ holder: S.holder, pot: S.pot, events: S.events });
+  S.pot += S.stake * n; S.events++; S.holder = (S.holder + 1) % n;
+  $('drinkMsg').textContent = S.drink ? prev + ' drinks' : '';
+  try { navigator.vibrate && navigator.vibrate(40); } catch {}
+  save(); renderGame();
+}
+
+function undo() {
+  const h = S.history.pop();
+  if (!h) return;
+  Object.assign(S, { holder: h.holder, pot: h.pot, events: h.events });
+  $('drinkMsg').textContent = '';
+  save(); renderGame();
+}
+
+function finish() {
+  S.phase = 'end'; save();
+  $('endBody').innerHTML = '';
+  const mk = (tag, cls, txt) => { const e = document.createElement(tag); if (cls) e.className = cls; e.textContent = txt; return e; };
+  $('endBody').append(
+    mk('div', 'label', 'Full time'),
+    mk('p', 'win', S.players[S.holder]),
+    mk('p', '', 'takes the pot'),
+    mk('p', 'amount', gbp(S.pot)),
+    mk('p', 'sub', S.events + ' ' + S.trigger.toLowerCase() + (S.events === 1 ? '' : 's') + ' · ' + S.players.length + ' players · ' + gbp(S.stake) + ' each time')
+  );
+  const again = mk('button', 'big', 'New game'); again.onclick = () => { S.phase = 'setup'; save(); renderSetup(); show('setup'); };
+  $('endBody').append(again);
+  show('end');
+}
+
+function checkWhistle() {
+  if (S.phase !== 'game' || S.mode !== 'roulette' || !S.roundEnd || Date.now() < S.roundEnd) return;
+  S.roundEnd = null; save();
+  $('oName').textContent = S.players[S.holder];
+  $('oAmount').textContent = gbp(S.pot);
+  $('overlay').classList.add('on');
+  try { navigator.vibrate && navigator.vibrate([200, 100, 200]); } catch {}
+}
+$('nextRound').onclick = () => {
+  $('overlay').classList.remove('on');
+  Object.assign(S, { pot: 0, events: 0, history: [] }); $('drinkMsg').textContent = '';
+  scheduleWhistle(); save(); renderGame();
+};
+setInterval(checkWhistle, 1000);
+
+$('start').onclick = start;
+$('fire').onclick = fire;
+$('undo').onclick = undo;
+$('finish').onclick = finish;
+
+renderSetup();
+if (S.phase === 'game') { renderGame(); show('game'); checkWhistle(); }
+else if (S.phase === 'end') finish();
+</script>
+</body>
+</html>
