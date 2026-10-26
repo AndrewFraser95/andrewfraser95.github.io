@@ -60,6 +60,13 @@
   .receipt .tot { font-weight:700; font-size:17px; }
   .amount { font-family:var(--serif); font-size:64px; margin:0; }
 </style>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+} }
+</script>
+<script type="module" src="coin.js"></script>
 </head>
 <body>
 
@@ -193,6 +200,7 @@ function fire() {
   S.contrib[S.holder] += S.stake; S.pot += S.stake; S.events++; S.holder = (S.holder + 1) % n;
   $('drinkMsg').textContent = (S.drink ? prev + ' drinks. ' : '') + prev + ' puts in ' + gbp(S.stake);
   try { navigator.vibrate && navigator.vibrate(40); } catch {}
+  if (window.tossCoin) window.tossCoin(S.stake);
   save(); renderGame();
 }
 
