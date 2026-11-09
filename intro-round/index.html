@@ -1,0 +1,242 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Intro Round">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="theme-color" content="#0e0e0e">
+<title>Intro Round</title>
+<style>
+  :root { --bg:#0e0e0e; --cream:#f4efe6; --gold:#c8a96a; --serif:"Didot","Bodoni 72",Georgia,serif; }
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  [hidden] { display:none !important; }
+  html, body { margin:0; position:fixed; top:0; left:0; width:100%; height:100%; background:var(--bg); color:var(--cream);
+    font-family:-apple-system, system-ui, sans-serif; overflow:hidden; }
+  #app { position:fixed; top:0; left:0; width:100%; height:100%; display:flex; flex-direction:column; align-items:center; gap:14px; text-align:center;
+    padding:calc(env(safe-area-inset-top) + 20px) 24px calc(env(safe-area-inset-bottom) + 20px); overflow-y:auto; }
+  #app > :first-child { margin-top:auto; }
+  #app > :last-child { margin-bottom:auto; }
+  h1 { margin:0; font-family:var(--serif); font-style:italic; font-weight:400; font-size:46px; }
+  h2 { margin:0; font-family:var(--serif); font-style:italic; font-weight:400; font-size:30px; line-height:1.1; overflow-wrap:anywhere; }
+  .sub { margin:0; opacity:.72; max-width:340px; line-height:1.45; }
+  .small { font-size:13px; opacity:.5; }
+  .label { margin:8px 0 0; opacity:.6; font-size:13px; letter-spacing:3px; text-transform:uppercase; }
+  .row { display:flex; gap:8px; flex-wrap:wrap; justify-content:center; }
+  button { font:inherit; color:var(--cream); background:transparent; border:1.5px solid rgba(244,239,230,.35); border-radius:12px;
+    padding:12px 18px; font-size:18px; font-weight:600; }
+  button.sel { background:var(--cream); color:#111; border-color:var(--cream); }
+  button.big { background:var(--gold); color:#111; border:0; font-size:24px; font-weight:700; padding:16px 48px; border-radius:60px; }
+  button:disabled { opacity:.35; }
+  textarea { width:100%; max-width:340px; height:140px; font:inherit; font-size:16px; color:var(--cream); background:rgba(244,239,230,.08);
+    border:1.5px solid rgba(244,239,230,.35); border-radius:12px; padding:12px; outline:none; resize:none; }
+  .back, .tip { font-size:13px; opacity:.55; color:var(--cream); }
+  .back { text-decoration:none; }
+  .team { display:flex; align-items:center; justify-content:space-between; gap:20px; width:100%; max-width:300px; font-size:20px; padding:6px 0; border-bottom:1px solid rgba(244,239,230,.12); }
+  .dotc { width:12px; height:12px; border-radius:50%; display:inline-block; margin-right:8px; }
+  .playbtn { width:190px; height:190px; border-radius:50%; background:var(--gold); color:#111; border:0; font-size:26px; font-weight:800; line-height:1.15; padding:0; position:relative; overflow:hidden; }
+  .playbtn span { position:relative; z-index:1; display:block; }
+  .playbtn i { position:absolute; left:0; bottom:0; width:100%; height:0; background:rgba(0,0,0,.18); }
+  .art { width:min(60vw, 260px); height:min(60vw, 260px); border-radius:8px; box-shadow:0 10px 40px rgba(0,0,0,.6); background:#222; }
+  .scorebar { display:flex; gap:14px; justify-content:center; flex-wrap:wrap; font-size:15px; opacity:.9; }
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+// Curated iTunes track ids per pack (no artists with serious controversies). Audio and artwork are fetched from the iTunes lookup API at game time.
+const PACKS = {"christmas":[282658482,1480780254,1445666233,6781238591,710484197,347010852,64807078,476096580,1445412280,1364952901,1742830149,1442732095,1358462132,268219457,716170526,763823872,583738072,1620864046,699673579,1772699522,721282590,1440815070,745040984,1444319982,693526009,1440650039,1831874211,190859558,1440856020,1647397445,1484609636,1434927132,1060903457],"xmaskids":[1440492358,693898961,6806024193,1445318939,1435551063,1452897771,1440618281,1440620673,255945952,1830017369,716170091,718807584],"kids":[1440618281,1487738283,1442812775,1444215459,1467938146,1452873021,1440639381,1594677760,714526448,714576811,1442942024,1264976429,1154239184,1445888394,1440859704,716602067,1444220448,1440726689,1440639393,1594677759,714572098,1440719249,1444069906,1490326466,1444055498,775874329,961298418,1440851075,1596532400,1411628233,1550188252,1820264150,723501674,863835363],"seventies":[1422648513,1422649021,1440816842,693398371,6781080314,1440900114,640369792,1445667706,1443339597,1452863525,1471565782,202271971,202272624,1440834224,1441164738,1440853776,1828716610,933582121,1470355848,1444055306,1441165136,1440743544,1508423608,1482519924,402741385,454441573,1608550023,1763234100,1452863700],"eighties":[368555810,1443149553,795192833,1440677665,1310067441,268544309,1485596041,840431935,466738077,253300195,478343731,207445080,1504111288,714832730,1440517679,1367995995,696233982,1490914106,1676422878,1170675034,1874757282,80815209,1440866486,478343732,405600299,397587070,1440907033],"nineties":[1573849255,264026169,1517527461,1443758761,1440783625,1516001301,1516001310,867694916,1440767243,1517447336,292538652,724647729,1731384547,1437330578,73273491,1745576958,532846241,400079120,1308542773,1762669878,1054461710,445384020,1775526296,299699600,1444965615,713773457,1604646670,1750462267],"noughties":[1440717826,208624172,1774799818,337999738,1441154437,1440856220,1543262843,584175777,91989806,287620241,290286598,1444394470,1774282354,296016899,1123076826,1440666111,1442612192,1440903439,386153478,1491226770,477018881,1444594866,1446019275,1445693246,1470471775,20886378,290286599,1445860576],"today":[1193683174,1499386265,943946671,1545376023,413623677,1321217032,1447401620,1475546088,1538003843,1615585008,1674691586,1653491133,1468058171,1744253558,1560735856,1472563571,1485802967,1574968888,693238179,1440854049,858518134,1162482549,1714502827,1484636829,1445949267,1571330212,1373506170,1556170101,1590036021,1581087034,1606901546,1820264150],"movies":[1490326466,1820060469,207445080,405600299,387193955,30475379,566322365,1434371887,1440864026,316164977,388047177,1745576958,1440903439,309484308,1507830245,715595121,696801511,343131517,1443912923,1440844700,1440844694,1387834761,1442812775,1440618281,714526448,1440726689,1498647654,1445028072,1154239184,1604646670]};
+
+const AGES = { little: 'Little ones', family: 'Family', teens: 'Teens', grown: 'Grown-ups' };
+const THEMES = { christmas: 'Christmas', mix: 'Christmas + hits', hits: 'Just hits' };
+const XMAS_W = { little: { xmaskids: 60, christmas: 40 }, family: { christmas: 100 }, teens: { christmas: 100 }, grown: { christmas: 100 } };
+const HIT_W = {
+  little: { kids: 100 },
+  family: { kids: 25, today: 25, eighties: 15, nineties: 15, movies: 20 },
+  teens: { today: 40, noughties: 25, nineties: 15, kids: 10, movies: 10 },
+  grown: { seventies: 15, eighties: 25, nineties: 25, noughties: 20, movies: 15 }
+};
+const LENGTHS = { 10: 'Easy (10s)', 5: 'Medium (5s)', 3: 'Hard (3s)' };
+const TEAM_COLS = ['#d2553f', '#3f9d6b', '#4f8fd6', '#d6a23f'];
+const KEY = 'intro-v1';
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+let cfg = { age: 'family', theme: 'mix', count: 15, len: 5, teams: 2, custom: '', useCustom: false };
+try { const x = JSON.parse(localStorage.getItem(KEY)); if (x) cfg = Object.assign(cfg, x); } catch {}
+const saveCfg = () => { try { localStorage.setItem(KEY, JSON.stringify(cfg)); } catch {} };
+const au = new Audio(); au.preload = 'auto';
+let G = null, stopTimer = null, fill = null;
+const on = (sel, fn) => document.querySelectorAll(sel).forEach(e => e.onclick = () => fn(e));
+function view(html, after) { clearTimeout(stopTimer); clearInterval(fill); au.pause(); $('app').innerHTML = html; $('app').scrollTop = 0; if (after) after(); }
+
+// ---------- setup ----------
+function setup() {
+  const opt = (name, vals, cur, fmt) => `<div class="row">${vals.map(v => `<button data-opt="${name}" data-v="${v}" class="${String(v) === String(cur) ? 'sel' : ''}">${fmt(v)}</button>`).join('')}</div>`;
+  view(`
+    <a class="back" href="/">All apps</a>
+    <h1>Intro Round</h1>
+    <p class="sub">The phone plays a few seconds of a song. Shout out the answer. Songs are picked for you by age.</p>
+    ${cfg.useCustom ? '' : `
+    <p class="label">Who's playing</p>${opt('age', Object.keys(AGES), cfg.age, v => AGES[v])}
+    <p class="label">Songs</p>${opt('theme', Object.keys(THEMES), cfg.theme, v => THEMES[v])}`}
+    <p class="label">Rounds</p>${opt('count', [10, 15, 20], cfg.count, v => v)}
+    <p class="label">Difficulty</p>${opt('len', [10, 5, 3], cfg.len, v => LENGTHS[v])}
+    <p class="label">Teams</p>${opt('teams', [1, 2, 3, 4], cfg.teams, v => v === 1 ? 'Everyone' : v)}
+    <button id="cust">${cfg.useCustom ? 'Use ready-made songs instead' : 'Use my own song list'}</button>
+    ${cfg.useCustom ? `<textarea id="list" placeholder="One song per line, e.g.&#10;Last Christmas Wham&#10;Mr Brightside The Killers">${esc(cfg.custom)}</textarea>
+    <p class="sub small">Type the song and artist in any order. Up to 20 lines.</p>` : ''}
+    <button class="big" id="go">Start</button>
+    <p class="sub small" id="msg"></p>
+    <a class="tip" href="https://ko-fi.com/andrewfraserprogrammer" target="_blank" rel="noopener">Enjoying this? Leave a tip</a>
+    <p class="small" style="font-size:11px">Song previews courtesy of Apple. Clips are 30 seconds from the middle of each track.</p>
+  `, () => {
+    on('[data-opt]', e => { const k = e.dataset.opt; cfg[k] = (k === 'age' || k === 'theme') ? e.dataset.v : +e.dataset.v; saveCfg(); setup(); });
+    $('cust').onclick = () => { if ($('list')) cfg.custom = $('list').value; cfg.useCustom = !cfg.useCustom; saveCfg(); setup(); };
+    $('go').onclick = () => { if (cfg.useCustom) cfg.custom = $('list').value; saveCfg(); start(); };
+  });
+}
+
+// ---------- picking songs ----------
+function weights() {
+  const share = cfg.theme === 'christmas' ? 1 : cfg.theme === 'hits' ? 0 : 0.5, w = {};
+  const add = (tbl, f) => { const tot = Object.values(tbl).reduce((a, b) => a + b, 0); Object.entries(tbl).forEach(([k, v]) => { w[k] = (w[k] || 0) + f * v / tot; }); };
+  if (share) add(XMAS_W[cfg.age], share);
+  if (share < 1) add(HIT_W[cfg.age], 1 - share);
+  return w;
+}
+
+function pickIds(n) {
+  const w = weights(), packs = Object.keys(w).filter(k => PACKS[k] && PACKS[k].length), want = n + 5;   // a few spares in case a preview is missing
+  const tot = packs.reduce((a, k) => a + w[k], 0);
+  const quota = Object.fromEntries(packs.map(k => [k, Math.floor(want * w[k] / tot)]));
+  let left = want - Object.values(quota).reduce((a, b) => a + b, 0);
+  packs.sort((a, b) => (w[b] / tot * want % 1) - (w[a] / tot * want % 1));
+  for (let i = 0; left > 0; i = (i + 1) % packs.length, left--) quota[packs[i]]++;
+  const seen = new Set(), ids = [];
+  packs.forEach(k => shuffle(PACKS[k]).slice(0, quota[k]).forEach(id => { if (!seen.has(id)) { seen.add(id); ids.push(id); } }));
+  return shuffle(ids);
+}
+
+const toSong = r => ({ t: r.trackName, a: r.artistName, url: r.previewUrl, art: (r.artworkUrl100 || '').replace('100x100', '600x600') });
+
+async function lookup(ids) {
+  const r = await fetch('https://itunes.apple.com/lookup?country=GB&id=' + ids.join(','));
+  if (!r.ok) throw new Error('lookup ' + r.status);
+  const data = (await r.json()).results.filter(x => x.previewUrl);
+  const byId = Object.fromEntries(data.map(x => [x.trackId, x]));
+  return ids.map(id => byId[id]).filter(Boolean).map(toSong);
+}
+
+async function searchOne(term) {
+  const r = await fetch('https://itunes.apple.com/search?country=GB&entity=song&limit=5&term=' + encodeURIComponent(term));
+  if (!r.ok) throw new Error('search ' + r.status);
+  const hit = (await r.json()).results.find(x => x.previewUrl);
+  return hit ? toSong(hit) : null;
+}
+
+async function customSongs(lines, progress) {
+  const out = [];
+  for (let i = 0; i < lines.length; i += 4) {
+    const res = await Promise.all(lines.slice(i, i + 4).map(l => searchOne(l).catch(() => null)));
+    out.push(...res.filter(Boolean)); progress(Math.min(lines.length, i + 4), lines.length);
+    await new Promise(r => setTimeout(r, 1200));
+  }
+  return out;
+}
+
+async function start() {
+  view(`<h2>Finding songs</h2><p class="sub" id="prog">One moment...</p>`);
+  let songs;
+  try {
+    if (cfg.useCustom) {
+      const lines = cfg.custom.split('\n').map(s => s.trim()).filter(Boolean).slice(0, 20);
+      if (lines.length < 2) { setup(); $('msg').textContent = 'Add at least two songs.'; return; }
+      songs = shuffle(await customSongs(lines, (a, b) => { const p = $('prog'); if (p) p.textContent = a + ' of ' + b; }));
+    } else songs = await lookup(pickIds(cfg.count));
+  } catch (e) {
+    setup(); $('msg').textContent = 'Could not reach the music service. Check your connection and try again.'; return;
+  }
+  songs = songs.slice(0, cfg.count);
+  if (songs.length < 2) { setup(); $('msg').textContent = 'No songs found. Try again.'; return; }
+  G = { songs, i: 0, plays: 0, scores: Array(cfg.teams).fill(0), right: 0 };
+  play();
+}
+
+// ---------- playing ----------
+const durs = () => [cfg.len, cfg.len * 2, 30];
+const PTS = [3, 2, 1];
+
+function scoreBar() {
+  if (cfg.teams === 1) return `<div class="scorebar">Correct so far: ${G.right}</div>`;
+  return `<div class="scorebar">${G.scores.map((s, i) => `<span><span class="dotc" style="background:${TEAM_COLS[i]};margin-right:5px"></span>${s}</span>`).join('')}</div>`;
+}
+
+function play() {
+  const s = G.songs[G.i], d = durs();
+  G.plays = 0;
+  view(`
+    <div class="label">Song ${G.i + 1} of ${G.songs.length}</div>
+    ${scoreBar()}
+    <button class="playbtn" id="p"><i id="f"></i><span id="pl">Play<br>${d[0]}s</span></button>
+    <p class="sub" id="hint">Everyone shout out your guess. Tap again for a longer clip, but fewer points.</p>
+    <button id="rev" disabled>Reveal</button>
+  `, () => {
+    au.src = s.url; au.load();
+    $('p').onclick = () => {
+      if (G.plays >= 3) return;
+      const secs = d[G.plays], pts = PTS[G.plays];
+      G.plays++;
+      au.currentTime = 0; au.play().catch(() => { $('hint').textContent = 'Tap play again. The browser blocked the sound.'; G.plays--; });
+      const f = $('f'); f.style.transition = 'none'; f.style.height = '0'; requestAnimationFrame(() => { f.style.transition = `height ${secs}s linear`; f.style.height = '100%'; });
+      $('rev').disabled = false; $('p').disabled = true;
+      clearTimeout(stopTimer);
+      stopTimer = setTimeout(() => {
+        au.pause(); f.style.transition = 'none'; f.style.height = '0'; $('p').disabled = false;
+        if (G.plays < 3) $('pl').innerHTML = `Again<br>${d[G.plays]}s`; else { $('pl').innerHTML = 'Full<br>clip done'; $('p').disabled = true; }
+        $('hint').textContent = G.plays < 3 ? `Worth ${PTS[G.plays]} point${PTS[G.plays] === 1 ? '' : 's'} if you get it on the next play.` : 'Time to reveal.';
+      }, secs * 1000);
+    };
+    $('rev').onclick = () => reveal();
+  });
+}
+
+function reveal() {
+  const s = G.songs[G.i], pts = PTS[Math.max(0, G.plays - 1)], last = G.i === G.songs.length - 1;
+  view(`
+    <img class="art" src="${esc(s.art)}" alt="">
+    <h2>${esc(s.t)}</h2>
+    <div class="sub">${esc(s.a)}</div>
+    ${cfg.teams === 1 ? `<div class="label">Did anyone get it?</div><div class="row"><button id="yes" class="sel">Yes</button><button id="no">Nobody</button></div>`
+      : `<div class="label">Who got it? (${pts} point${pts === 1 ? '' : 's'})</div>
+         <div class="row">${G.scores.map((_, i) => `<button data-t="${i}" style="border-color:${TEAM_COLS[i]}">Team ${i + 1}</button>`).join('')}<button id="no">Nobody</button></div>`}
+    <button id="full" class="small" style="border:0;opacity:.6;font-size:14px">Play the full clip</button>
+  `, () => {
+    const next = () => { G.i++; if (G.i >= G.songs.length) final(); else play(); };
+    on('[data-t]', e => { G.scores[+e.dataset.t] += pts; next(); });
+    if ($('yes')) $('yes').onclick = () => { G.right++; next(); };
+    $('no').onclick = next;
+    $('full').onclick = () => { au.currentTime = 0; au.play(); };
+    au.play().catch(() => {}); au.currentTime = 0;   // celebrate with the clip
+  });
+}
+
+function final() {
+  const rows = cfg.teams === 1
+    ? `<h1>${G.right} of ${G.songs.length}</h1><p class="sub">songs named</p>`
+    : (() => { const max = Math.max(...G.scores), win = G.scores.map((s, i) => s === max ? i + 1 : 0).filter(Boolean);
+        return `<h1>${win.length > 1 ? 'A draw' : 'Team ' + win[0] + ' win'}</h1>` + G.scores.map((s, i) => `<div class="team"><span><span class="dotc" style="background:${TEAM_COLS[i]}"></span>Team ${i + 1}</span><b>${s}</b></div>`).join(''); })();
+  view(`
+    <div class="label">Final scores</div>
+    ${rows}
+    <button class="big" id="again">Play again</button>
+    <button id="chg">Change settings</button>
+  `, () => { $('again').onclick = start; $('chg').onclick = setup; });
+}
+
+setup();
+</script>
+</body>
+</html>

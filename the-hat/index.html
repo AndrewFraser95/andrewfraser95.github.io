@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="The Hat">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="theme-color" content="#0e0e0e">
+<title>The Hat</title>
+<style>
+  :root { --bg:#0e0e0e; --cream:#f4efe6; --gold:#c8a96a; --t0:#d2553f; --t1:#3f9d6b; --serif:"Didot","Bodoni 72",Georgia,serif; }
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  [hidden] { display:none !important; }
+  html, body { margin:0; position:fixed; top:0; left:0; width:100%; height:100%; background:var(--bg); color:var(--cream);
+    font-family:-apple-system, system-ui, sans-serif; overflow:hidden; }
+  #app { position:fixed; top:0; left:0; width:100%; height:100%; display:flex; flex-direction:column; align-items:center; gap:14px; text-align:center;
+    padding:calc(env(safe-area-inset-top) + 20px) 24px calc(env(safe-area-inset-bottom) + 20px); overflow-y:auto; }
+  #app > :first-child { margin-top:auto; }
+  #app > :last-child { margin-bottom:auto; }
+  h1 { margin:0; font-family:var(--serif); font-style:italic; font-weight:400; font-size:46px; }
+  h2 { margin:0; font-family:var(--serif); font-style:italic; font-weight:400; font-size:34px; }
+  .sub { margin:0; opacity:.72; max-width:340px; line-height:1.45; }
+  .small { font-size:13px; opacity:.5; }
+  .label { margin:8px 0 0; opacity:.6; font-size:13px; letter-spacing:3px; text-transform:uppercase; }
+  .row { display:flex; gap:8px; flex-wrap:wrap; justify-content:center; }
+  button { font:inherit; color:var(--cream); background:transparent; border:1.5px solid rgba(244,239,230,.35); border-radius:12px;
+    padding:12px 18px; font-size:18px; font-weight:600; }
+  button.sel { background:var(--cream); color:#111; border-color:var(--cream); }
+  button.big { background:var(--gold); color:#111; border:0; font-size:24px; font-weight:700; padding:16px 48px; border-radius:60px; }
+  button:disabled { opacity:.35; }
+  input[type=text] { font:inherit; font-size:18px; color:var(--cream); background:rgba(244,239,230,.08); border:1.5px solid rgba(244,239,230,.35);
+    border-radius:12px; padding:12px 14px; outline:none; width:230px; text-align:center; }
+  input[type=text]:focus { border-color:var(--gold); }
+  .players { display:flex; flex-wrap:wrap; gap:8px; justify-content:center; max-width:360px; }
+  .chip { display:flex; align-items:center; gap:6px; border:2px solid; border-radius:999px; padding:6px 6px 6px 14px; font-size:17px; }
+  .chip.t0 { border-color:var(--t0); } .chip.t1 { border-color:var(--t1); }
+  .chip button { padding:0 9px; border:0; font-size:19px; opacity:.6; }
+  .chip .sw { border:0; padding:2px 8px; font-size:12px; letter-spacing:1px; text-transform:uppercase; opacity:.75; }
+  .t0c { color:var(--t0); } .t1c { color:var(--t1); }
+  .stack { display:flex; flex-direction:column; gap:10px; align-items:center; }
+  .back { font-size:13px; opacity:.55; color:var(--cream); text-decoration:none; }
+  .tip { font-size:13px; opacity:.55; color:var(--cream); }
+  .score { display:flex; gap:28px; justify-content:center; font-family:var(--serif); }
+  .score div { font-size:54px; line-height:1; } .score small { display:block; font-family:-apple-system,system-ui,sans-serif; font-size:13px; letter-spacing:2px; text-transform:uppercase; margin-top:6px; }
+  /* play */
+  #card { font-family:var(--serif); font-size:min(14vw, 11vh); line-height:1.1; padding:0 4vw; overflow-wrap:anywhere; }
+  #timer { font-size:64px; font-weight:800; font-variant-numeric:tabular-nums; }
+  #bar { width:100%; max-width:340px; height:8px; background:rgba(244,239,230,.15); border-radius:4px; overflow:hidden; }
+  #bar i { display:block; height:100%; background:var(--gold); width:100%; }
+  button.got { background:#2f8f5b; border:0; font-size:28px; padding:24px; width:100%; max-width:340px; border-radius:20px; font-weight:800; }
+  button.skip { opacity:.8; }
+  .hatnote { font-size:13px; opacity:.55; letter-spacing:2px; text-transform:uppercase; }
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+const STARTERS = {
+  kids: ["Santa Claus","Reindeer","Snowman","Elf on the Shelf","Christmas tree","Mince pie","Stocking","Sleigh","Snowflake","Gingerbread man","Candy cane","Wrapping paper","Christmas cracker","Snowball fight","Rudolph","Mistletoe","Angel","Wreath","Turkey","Christmas pudding","Jingle bells","Advent calendar","Penguin","Polar bear","Sledging","Ice skating","Opening presents","Making a snow angel"],
+  all: ["Home Alone","The Grinch","Elf","The Snowman","The Polar Express","Love Actually","Frozen","Last Christmas","All I Want for Christmas Is You","Brussels sprouts","Christmas jumper","Secret Santa","Pigs in blankets","The King's speech","Mariah Carey","Bing Crosby","Silent Night","Roast potatoes","Terrible cracker jokes","Paper hat","Board game night","Christmas lights","Nativity play","Carol singers","Boxing Day walk","Turkey sandwich","The Muppet Christmas Carol","Strictly Christmas special","Wrapping a present badly","Santa's workshop"],
+  adults: ["Dad asleep on the sofa","Tangled fairy lights","Assembling a flatpack present","Re-gifting","Burnt roast potatoes","Fighting over the TV remote","Boxing Day sales","Hangover on Boxing Day","Uncle's terrible joke","Forgetting to defrost the turkey","Last-minute Christmas Eve shopping","Mulled wine","Die Hard","Fairytale of New York","Eating far too much","Undoing your belt","Queuing at the post office","Wrong size jumper","Pretending to love a present","Arguing over Monopoly"]
+};
+const AGES = { little: 'Little ones', all: 'Everyone', adults: 'Grown-ups' };
+const ROUNDS = [
+  { n: 1, name: 'Describe it', rule: 'Say anything you like, except the words on the card.' },
+  { n: 2, name: 'One word', rule: 'Same cards again. You can only say one word per card.' },
+  { n: 3, name: 'Charades', rule: 'Same cards again. No words, no sounds. Act it out.' }
+];
+const KEY = 'hat-v1';
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const fresh = () => ({ phase: 'setup', players: [], tn: ['Holly', 'Ivy'], per: 3, secs: 45, starters: 10, age: 'all', cards: [], hat: [], round: 1,
+  scores: [0, 0], rs: [[0, 0], [0, 0], [0, 0]], tp: [0, 0], cur: 0, carry: 0, adder: 0, turn: null });
+let S = fresh();
+try { const x = JSON.parse(localStorage.getItem(KEY)); if (x && x.players) S = Object.assign(fresh(), x); } catch {}
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch {} };
+const members = t => S.players.filter(p => p.team === t);
+const tcls = t => 't' + t;
+let timerId = null, deadline = 0;
+
+function view(html, after) { clearInterval(timerId); $('app').innerHTML = html; $('app').scrollTop = 0; if (after) after(); }
+const on = (sel, fn) => document.querySelectorAll(sel).forEach(e => e.onclick = () => fn(e));
+
+// ---------- setup ----------
+function setup() {
+  const chips = S.players.map((p, i) => `<div class="chip ${tcls(p.team)}"><span>${esc(p.name)}</span><button class="sw" data-sw="${i}" aria-label="Switch team">${esc(S.tn[p.team])}</button><button data-rm="${i}" aria-label="Remove">×</button></div>`).join('');
+  const opt = (name, vals, cur, fmt) => `<div class="row">${vals.map(v => `<button data-opt="${name}" data-v="${v}" class="${v === cur ? 'sel' : ''}">${fmt(v)}</button>`).join('')}</div>`;
+  view(`
+    <a class="back" href="/">All apps</a>
+    <h1>The Hat</h1>
+    <p class="sub">Everyone writes cards and drops them in the hat. Three rounds, same cards: describe it, one word, then charades.</p>
+    <p class="label">Players</p>
+    <div class="players">${chips || '<span class="small">Add everyone playing. Teams alternate automatically.</span>'}</div>
+    <div class="row"><input type="text" id="nm" placeholder="Add a name" maxlength="14" autocomplete="off" autocapitalize="words"><button id="add">Add</button></div>
+    <button id="mix" ${S.players.length < 3 ? 'disabled' : ''}>Shuffle teams</button>
+    <p class="label">Cards each</p>${opt('per', [2, 3, 4, 5], S.per, v => v)}
+    <p class="label">Turn length</p>${opt('secs', [30, 45, 60], S.secs, v => v + 's')}
+    <p class="label">Christmas starter cards</p>${opt('starters', [0, 10, 20], S.starters, v => v === 0 ? 'None' : v)}
+    <p class="label">Who's playing</p>${opt('age', Object.keys(AGES), S.age, v => AGES[v])}
+    <button class="big" id="go">Start</button>
+    <p class="sub small" id="msg"></p>
+    <a class="tip" href="https://ko-fi.com/andrewfraserprogrammer" target="_blank" rel="noopener">Enjoying this? Leave a tip</a>
+  `, () => {
+    const add = () => { const v = $('nm').value.trim(); if (!v) return; S.players.push({ name: v, team: S.players.length % 2 }); save(); setup(); $('nm').focus(); };
+    $('add').onclick = add; $('nm').onkeydown = e => { if (e.key === 'Enter') add(); };
+    on('[data-rm]', e => { S.players.splice(+e.dataset.rm, 1); save(); setup(); });
+    on('[data-sw]', e => { const p = S.players[+e.dataset.sw]; p.team = 1 - p.team; save(); setup(); });
+    on('[data-opt]', e => { const k = e.dataset.opt; S[k] = k === 'age' ? e.dataset.v : +e.dataset.v; save(); setup(); });
+    $('mix').onclick = () => { shuffle(S.players.map((_, i) => i)).forEach((pi, k) => S.players[pi].team = k % 2); save(); setup(); };
+    $('go').onclick = () => {
+      if (S.players.length < 2 || !members(0).length || !members(1).length) { $('msg').textContent = 'Add at least two players, one on each team.'; return; }
+      const pool = S.age === 'little' ? STARTERS.kids : S.age === 'adults' ? [...STARTERS.all, ...STARTERS.adults] : [...STARTERS.kids, ...STARTERS.all];
+      Object.assign(S, { cards: shuffle(pool).slice(0, S.starters), adder: 0, round: 1, scores: [0, 0], rs: [[0, 0], [0, 0], [0, 0]], tp: [0, 0], cur: 0, carry: 0, turn: null, phase: 'pass' });
+      save(); render();
+    };
+  });
+}
+
+// ---------- adding cards ----------
+function pass() {
+  const p = S.players[S.adder];
+  view(`
+    <div class="label">Pass the phone to</div>
+    <h1 class="${p.team ? 't1c' : 't0c'}">${esc(p.name)}</h1>
+    <p class="sub">Everyone else, look away. ${p.name} is writing ${S.per} cards.</p>
+    <button class="big" id="im">I'm ${esc(p.name)}</button>
+    <p class="small">${S.cards.length} cards in the hat</p>
+  `, () => { $('im').onclick = () => { S.phase = 'write'; render(); }; });
+}
+
+function write() {
+  const p = S.players[S.adder];
+  const ins = [...Array(S.per)].map((_, i) => `<input type="text" class="cardin" maxlength="40" placeholder="Card ${i + 1}" autocomplete="off" autocapitalize="sentences">`).join('');
+  view(`
+    <h2>${esc(p.name)}, fill the hat</h2>
+    <p class="sub">Things everyone will know: people, films, places, in-jokes, embarrassing family moments.</p>
+    <div class="stack">${ins}</div>
+    <button class="big" id="done" disabled>Done</button>
+  `, () => {
+    const all = [...document.querySelectorAll('.cardin')];
+    const check = () => { $('done').disabled = !all.every(i => i.value.trim()); };
+    all.forEach(i => i.oninput = check); all[0].focus();
+    $('done').onclick = () => {
+      all.forEach(i => S.cards.push(i.value.trim()));
+      S.adder++;
+      if (S.adder >= S.players.length) { S.hat = shuffle(S.cards); S.round = 1; S.phase = 'roundintro'; } else S.phase = 'pass';
+      save(); render();
+    };
+  });
+}
+
+// ---------- rounds ----------
+const scoreHTML = () => `<div class="score"><div class="t0c">${S.scores[0]}<small>${esc(S.tn[0])}</small></div><div class="t1c">${S.scores[1]}<small>${esc(S.tn[1])}</small></div></div>`;
+
+function roundintro() {
+  const r = ROUNDS[S.round - 1];
+  view(`
+    <div class="label">Round ${r.n} of 3</div>
+    <h1>${r.name}</h1>
+    <p class="sub">${r.rule}</p>
+    <p class="sub small">${S.cards.length} cards in the hat. ${S.secs} seconds a turn. Guess as many as you can, skip the tricky ones.</p>
+    <button class="big" id="go">Start round ${r.n}</button>
+  `, () => { $('go').onclick = () => { S.phase = 'ready'; save(); render(); }; });
+}
+
+function curPlayer(t) { const m = members(t); return m[S.tp[t] % m.length]; }
+
+function ready() {
+  const t = S.cur, p = curPlayer(t), secs = S.carry > 0 ? S.carry : S.secs;
+  view(`
+    <div class="label">${esc(S.tn[t])}'s turn</div>
+    <h1 class="${t ? 't1c' : 't0c'}">${esc(p.name)}</h1>
+    <p class="sub">${esc(p.name)} gives the clues. Everyone on ${esc(S.tn[t])} guesses. Everyone else stays quiet.</p>
+    <p class="sub small">${secs} seconds${S.carry > 0 ? ' (left over from the last round)' : ''} · ${S.hat.length} cards left</p>
+    ${scoreHTML()}
+    <button class="big" id="go">Ready</button>
+  `, () => {
+    $('go').onclick = () => { S.turn = { team: t, secs, got: 0 }; deadline = Date.now() + secs * 1000; S.carry = 0; S.phase = 'play'; save(); render(); };
+  });
+}
+
+function play() {
+  const t = S.turn.team, total = S.turn.secs;
+  view(`
+    <div id="timer">${total}</div>
+    <div id="bar"><i></i></div>
+    <div class="hatnote"><span id="left">${S.hat.length}</span> in the hat · ${ROUNDS[S.round - 1].name}</div>
+    <div id="card">${esc(S.hat[0])}</div>
+    <button class="got" id="got">Got it</button>
+    <button class="skip" id="skip">Skip</button>
+  `, () => {
+    const tick = () => {
+      const left = Math.max(0, (deadline - Date.now()) / 1000);
+      $('timer').textContent = Math.ceil(left);
+      $('bar').firstElementChild.style.width = (left / total * 100) + '%';
+      if (left <= 0) endTurn(0);
+    };
+    tick(); timerId = setInterval(tick, 200);
+    $('got').onclick = () => {
+      S.hat.shift(); S.scores[t]++; S.rs[S.round - 1][t]++; S.turn.got++;
+      try { navigator.vibrate && navigator.vibrate(30); } catch {}
+      if (!S.hat.length) return endRound(Math.max(0, Math.round((deadline - Date.now()) / 1000)));
+      $('card').textContent = S.hat[0]; $('left').textContent = S.hat.length; save();
+    };
+    $('skip').onclick = () => { if (S.hat.length > 1) { S.hat.push(S.hat.shift()); $('card').textContent = S.hat[0]; save(); } };
+  });
+}
+
+function endTurn() {
+  clearInterval(timerId);
+  const t = S.turn.team;
+  S.tp[t]++; S.cur = 1 - t; S.phase = 'turnend'; save(); render();
+}
+
+function turnend() {
+  const t = S.turn.team, nxt = curPlayer(S.cur);
+  view(`
+    <div class="label">Time</div>
+    <h2 class="${t ? 't1c' : 't0c'}">${esc(S.tn[t])} got ${S.turn.got}</h2>
+    ${scoreHTML()}
+    <p class="sub small">${S.hat.length} cards left in the hat</p>
+    <p class="sub">Next up: <b>${esc(nxt.name)}</b> (${esc(S.tn[S.cur])})</p>
+    <button class="big" id="go">Pass the phone</button>
+  `, () => { $('go').onclick = () => { S.phase = 'ready'; save(); render(); }; });
+}
+
+function endRound(leftSecs) {
+  clearInterval(timerId);
+  const t = S.turn.team;
+  S.tp[t]++;
+  S.carry = leftSecs > 3 ? leftSecs : 0;
+  S.cur = S.carry ? t : 1 - t;
+  S.phase = S.round >= 3 ? 'final' : 'roundend';
+  save(); render();
+}
+
+function roundend() {
+  const r = ROUNDS[S.round - 1], nx = ROUNDS[S.round];
+  view(`
+    <div class="label">Round ${r.n} done</div>
+    <h2>${r.name}</h2>
+    <div class="score"><div class="t0c">${S.rs[S.round - 1][0]}<small>${esc(S.tn[0])}</small></div><div class="t1c">${S.rs[S.round - 1][1]}<small>${esc(S.tn[1])}</small></div></div>
+    <p class="label">Total</p>${scoreHTML()}
+    <p class="sub">Next: <b>${nx.name}</b>. ${nx.rule}</p>
+    <p class="sub small">${S.carry ? esc(S.tn[S.cur]) + ' starts with ' + S.carry + ' seconds left over.' : esc(S.tn[S.cur]) + ' starts.'}</p>
+    <button class="big" id="go">Start round ${nx.n}</button>
+  `, () => { $('go').onclick = () => { S.round++; S.hat = shuffle(S.cards); S.phase = 'ready'; save(); render(); }; });
+}
+
+function final() {
+  const [a, b] = S.scores, tie = a === b, w = a > b ? 0 : 1;
+  view(`
+    <div class="label">Final result</div>
+    <h1 class="${tie ? '' : w ? 't1c' : 't0c'}">${tie ? 'A draw' : esc(S.tn[w]) + ' win'}</h1>
+    ${scoreHTML()}
+    <div class="sub small">${[0, 1, 2].map(i => `Round ${i + 1}: ${S.rs[i][0]} - ${S.rs[i][1]}`).join(' · ')}</div>
+    <button class="big" id="again">Play again, same cards</button>
+    <button id="new">New game</button>
+  `, () => {
+    $('again').onclick = () => { Object.assign(S, { round: 1, scores: [0, 0], rs: [[0, 0], [0, 0], [0, 0]], tp: [0, 0], cur: 0, carry: 0, hat: shuffle(S.cards), phase: 'roundintro' }); save(); render(); };
+    $('new').onclick = () => { const p = S.players.map(x => ({ ...x })); S = fresh(); S.players = p; save(); render(); };
+  });
+}
+
+const SCREENS = { setup, pass, write, roundintro, ready, play, turnend, roundend, final };
+function render() {
+  // a refresh mid-turn resumes at the turn's ready screen
+  if (S.phase === 'play' && Date.now() > deadline) S.phase = 'ready';
+  (SCREENS[S.phase] || setup)();
+}
+render();
+</script>
+</body>
+</html>
