@@ -1,14 +1,42 @@
 // Add a new item to the home page by adding an entry here.
-//   type:   "web" | "mobile" | "escape"  (see TYPES)
+//   type:   "christmas" | "web" | "mobile" | "escape"  (see TYPES)
 //   href:   a route inside this site, or a path/URL that is a separate site
 //   router: true when href is a route handled by this React app
 export const TYPES = {
+  christmas: { label: "Christmas game", filter: "Christmas" },
   web: { label: "Web app", filter: "Web apps" },
   mobile: { label: "Mobile app", filter: "Mobile apps" },
   escape: { label: "Escape room", filter: "Escape rooms" },
 };
 
 export const APPS = [
+  {
+    id: "intro-round",
+    name: "Intro Round",
+    type: "christmas",
+    description:
+      "Name that tune. The phone plays a few seconds of a song, picked for your age group. Christmas songs, hits through the decades, or your own list.",
+    href: "/intro-round/",
+    cta: "Play",
+  },
+  {
+    id: "the-hat",
+    name: "The Hat",
+    type: "christmas",
+    description:
+      "Everyone writes cards and drops them in the hat. Three rounds with the same cards: describe it, one word, then charades. Pass the phone around.",
+    href: "/the-hat/",
+    cta: "Play",
+  },
+  {
+    id: "draw-pass",
+    name: "Draw and Pass",
+    type: "christmas",
+    description:
+      "Draw the word, pass the phone, guess the picture, draw the guess. Watch how far it drifts, then save the whole chain as a picture.",
+    href: "/draw-pass/",
+    cta: "Play",
+  },
   {
     id: "photobooth",
     name: "Photobooth",

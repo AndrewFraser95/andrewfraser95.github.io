@@ -1,0 +1,268 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Draw and Pass">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="theme-color" content="#0e0e0e">
+<title>Draw and Pass</title>
+<style>
+  :root { --bg:#0e0e0e; --cream:#f4efe6; --gold:#c8a96a; --serif:"Didot","Bodoni 72",Georgia,serif; }
+  * { box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  [hidden] { display:none !important; }
+  html, body { margin:0; position:fixed; top:0; left:0; width:100%; height:100%; background:var(--bg); color:var(--cream);
+    font-family:-apple-system, system-ui, sans-serif; overflow:hidden; }
+  #app { position:fixed; top:0; left:0; width:100%; height:100%; display:flex; flex-direction:column; align-items:center; gap:14px; text-align:center;
+    padding:calc(env(safe-area-inset-top) + 20px) 20px calc(env(safe-area-inset-bottom) + 16px); overflow-y:auto; }
+  #app > :first-child { margin-top:auto; }
+  #app > :last-child { margin-bottom:auto; }
+  h1 { margin:0; font-family:var(--serif); font-style:italic; font-weight:400; font-size:44px; }
+  h2 { margin:0; font-family:var(--serif); font-style:italic; font-weight:400; font-size:32px; }
+  .sub { margin:0; opacity:.72; max-width:340px; line-height:1.45; }
+  .small { font-size:13px; opacity:.5; }
+  .label { margin:8px 0 0; opacity:.6; font-size:13px; letter-spacing:3px; text-transform:uppercase; }
+  .row { display:flex; gap:8px; flex-wrap:wrap; justify-content:center; }
+  button { font:inherit; color:var(--cream); background:transparent; border:1.5px solid rgba(244,239,230,.35); border-radius:12px;
+    padding:12px 18px; font-size:18px; font-weight:600; }
+  button.sel { background:var(--cream); color:#111; border-color:var(--cream); }
+  button.big { background:var(--gold); color:#111; border:0; font-size:24px; font-weight:700; padding:16px 48px; border-radius:60px; }
+  button:disabled { opacity:.35; }
+  input[type=text] { font:inherit; font-size:20px; color:var(--cream); background:rgba(244,239,230,.08); border:1.5px solid rgba(244,239,230,.35);
+    border-radius:12px; padding:14px; outline:none; width:100%; max-width:340px; text-align:center; }
+  input[type=text]:focus { border-color:var(--gold); }
+  .players { display:flex; flex-wrap:wrap; gap:8px; justify-content:center; max-width:360px; }
+  .chip { display:flex; align-items:center; gap:8px; border:1.5px solid rgba(244,239,230,.35); border-radius:999px; padding:6px 6px 6px 16px; font-size:17px; }
+  .chip button { padding:0 10px; border:0; font-size:19px; opacity:.6; }
+  .back, .tip { font-size:13px; opacity:.55; color:var(--cream); }
+  .back { text-decoration:none; }
+  /* drawing */
+  #prompt { font-family:var(--serif); font-style:italic; font-size:26px; line-height:1.15; max-width:340px; overflow-wrap:anywhere; }
+  #bar { width:100%; max-width:340px; height:6px; background:rgba(244,239,230,.15); border-radius:3px; overflow:hidden; }
+  #bar i { display:block; height:100%; background:var(--gold); width:100%; }
+  #pad { background:#fff; border-radius:8px; touch-action:none; display:block; box-shadow:0 8px 30px rgba(0,0,0,.5); }
+  .tools { display:flex; gap:8px; align-items:center; justify-content:center; flex-wrap:wrap; }
+  .sw { width:34px; height:34px; border-radius:50%; padding:0; border:3px solid transparent; }
+  .sw.on { border-color:var(--cream); box-shadow:0 0 0 2px #111 inset; }
+  .tool { padding:8px 12px; font-size:15px; }
+  .dot { display:inline-block; border-radius:50%; background:var(--cream); }
+  img.shot { max-width:100%; max-height:46vh; border-radius:8px; background:#fff; box-shadow:0 8px 30px rgba(0,0,0,.5); }
+  .quote { font-family:var(--serif); font-style:italic; font-size:34px; line-height:1.15; max-width:340px; overflow-wrap:anywhere; }
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+const DECKS = {
+  christmas: {
+    little: ["Santa","Snowman","Christmas tree","Reindeer","Present","Star","Snowflake","Stocking","Candy cane","Elf","Sleigh","Gingerbread house","Angel","Bell","Wreath","Penguin","Polar bear","Turkey","Mince pie","Snow globe","Fireplace","Mittens","Robin","Holly","Candle","Igloo","Rudolph's nose","Christmas cracker"],
+    all: ["Santa stuck in a chimney","Snowman melting","Reindeer pulling a sleigh","Wrapping a present","Tangled fairy lights","Christmas dinner","Singing carols","Ice skating","Decorating the tree","Elf on the shelf","The Grinch","Nativity scene","Making a snow angel","Sledging down a hill","Kissing under the mistletoe","Santa's workshop","Pulling a cracker","Building a gingerbread house","Rudolph","Frosty the Snowman","The Three Wise Men","Sprouts on a plate","Ugly Christmas jumper","Writing a letter to Santa","Carving the turkey","Snowball fight"],
+    adults: ["Dad asleep after dinner","Fighting over the TV remote","Last-minute Christmas Eve shopping","Burning the roast potatoes","Hangover on Boxing Day","Re-gifting a present","The King's speech","Flatpack present at midnight","Secret Santa disaster","Awkward office Christmas party","Eating a whole tin of Quality Street","Fighting over the last pig in blanket","Undoing your belt after dinner","Singing Fairytale of New York","Mountain of wrapping paper","Queuing for the Boxing Day sales","Forgetting to defrost the turkey","Pretending to love a present"]
+  },
+  anything: {
+    little: ["Cat","Dog","House","Sun","Fish","Car","Flower","Banana","Rocket","Dinosaur","Tree","Rainbow","Bicycle","Pizza","Robot","Butterfly","Boat","Ice cream","Snail","Monster"],
+    all: ["Pirate ship","Giraffe on roller skates","Football match","Birthday cake","Lighthouse","Wizard","Superhero","Shark attack","Camping trip","Mermaid","Spaceship landing","Dragon","Haunted house","Fireworks","Zombie","Dancing robot","Volcano","Treasure map","Elephant in a bath","Cow jumping over the moon"],
+    adults: ["Traffic jam","Karaoke night","Job interview","Barbecue gone wrong","Gym on January 1st","Online dating","Working from home","Sat nav says turn around","IKEA trip","Stag do","Wedding dance floor","Mid-life crisis","Parking ticket","Video call fail","Self-checkout meltdown","Group chat argument"]
+  }
+};
+const AGES = { little: 'Little ones', all: 'Everyone', adults: 'Grown-ups' };
+const THEMES = { christmas: 'Christmas', anything: 'Anything', both: 'Both' };
+const COLOURS = ['#111111', '#d2342a', '#f08a1c', '#2f9e55', '#2b6fd6', '#7a4a21'];
+const SIZES = [5, 12, 26];
+const W = 800, H = 600;
+const KEY = 'drawpass-v1';
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+let cfg = { players: [], chains: 1, age: 'all', theme: 'christmas', limit: 60 };
+try { const x = JSON.parse(localStorage.getItem(KEY)); if (x && x.players) cfg = Object.assign(cfg, x); } catch {}
+const saveCfg = () => { try { localStorage.setItem(KEY, JSON.stringify(cfg)); } catch {} };
+let G = null;           // game: { chains:[{steps:[]}], c, k, words }
+let timerId = null;
+
+function view(html, after) { clearInterval(timerId); $('app').innerHTML = html; $('app').scrollTop = 0; if (after) after(); }
+const on = (sel, fn) => document.querySelectorAll(sel).forEach(e => e.onclick = () => fn(e));
+
+// ---------- setup ----------
+function setup() {
+  const opt = (name, vals, cur, fmt) => `<div class="row">${vals.map(v => `<button data-opt="${name}" data-v="${v}" class="${String(v) === String(cur) ? 'sel' : ''}">${fmt(v)}</button>`).join('')}</div>`;
+  view(`
+    <a class="back" href="/">All apps</a>
+    <h1>Draw and Pass</h1>
+    <p class="sub">One phone, passed around. Draw the word, hide it, the next person guesses the picture, the next draws that guess. See how it ends up.</p>
+    <p class="label">Players (2 to 8)</p>
+    <div class="players">${cfg.players.map((n, i) => `<div class="chip"><span>${esc(n)}</span><button data-rm="${i}" aria-label="Remove">×</button></div>`).join('') || '<span class="small">Add everyone playing.</span>'}</div>
+    <div class="row"><input type="text" id="nm" style="width:210px" placeholder="Add a name" maxlength="14" autocomplete="off" autocapitalize="words"><button id="add">Add</button></div>
+    <p class="label">Words</p>${opt('theme', Object.keys(THEMES), cfg.theme, v => THEMES[v])}
+    <p class="label">Who's playing</p>${opt('age', Object.keys(AGES), cfg.age, v => AGES[v])}
+    <p class="label">Drawing time</p>${opt('limit', [30, 60, 90, 0], cfg.limit, v => v ? v + 's' : 'No limit')}
+    <p class="label">Rounds (one chain each)</p>${opt('chains', [1, 2, 3], cfg.chains, v => v)}
+    <button class="big" id="go">Start</button>
+    <p class="sub small" id="msg"></p>
+    <a class="tip" href="https://ko-fi.com/andrewfraserprogrammer" target="_blank" rel="noopener">Enjoying this? Leave a tip</a>
+  `, () => {
+    const add = () => { const v = $('nm').value.trim(); if (!v || cfg.players.length >= 8) return; cfg.players.push(v); saveCfg(); setup(); $('nm').focus(); };
+    $('add').onclick = add; $('nm').onkeydown = e => { if (e.key === 'Enter') add(); };
+    on('[data-rm]', e => { cfg.players.splice(+e.dataset.rm, 1); saveCfg(); setup(); });
+    on('[data-opt]', e => { const k = e.dataset.opt; cfg[k] = (k === 'theme' || k === 'age') ? e.dataset.v : +e.dataset.v; saveCfg(); setup(); });
+    $('go').onclick = () => { if (cfg.players.length < 2) { $('msg').textContent = 'Add at least two players.'; return; } start(); };
+  });
+}
+
+function wordPool() {
+  const themes = cfg.theme === 'both' ? ['christmas', 'anything'] : [cfg.theme];
+  const out = [];
+  themes.forEach(t => { const d = DECKS[t]; out.push(...(cfg.age === 'little' ? d.little : cfg.age === 'adults' ? [...d.all, ...d.adults] : [...d.little, ...d.all])); });
+  return shuffle(out);
+}
+
+function start() {
+  const pool = wordPool(), N = cfg.players.length;
+  G = { c: 0, k: 0, chains: [...Array(cfg.chains)].map((_, c) => ({ start: c % N, word: pool[c % pool.length], steps: [] })) };
+  nextTurn();
+}
+
+const who = () => cfg.players[(G.chains[G.c].start + G.k) % cfg.players.length];
+
+function nextTurn() {
+  const N = cfg.players.length;
+  if (G.k >= N) return reveal();
+  const name = who();
+  view(`
+    <div class="label">Pass the phone to</div>
+    <h1>${esc(name)}</h1>
+    <p class="sub">Round ${G.c + 1} of ${G.chains.length}, step ${G.k + 1} of ${N}. Everyone else, look away.</p>
+    <button class="big" id="im">I'm ${esc(name)}</button>
+  `, () => { $('im').onclick = () => (G.k % 2 === 0 ? drawStep() : guessStep()); });
+}
+
+// ---------- drawing ----------
+function drawStep() {
+  const ch = G.chains[G.c], prev = ch.steps[ch.steps.length - 1];
+  const text = G.k === 0 ? ch.word : prev.data;
+  view(`
+    <div class="label">${G.k === 0 ? 'Draw this' : 'Draw what they guessed'}</div>
+    <div id="prompt">${esc(text)}</div>
+    ${cfg.limit ? '<div id="bar"><i></i></div>' : ''}
+    <canvas id="pad" width="${W}" height="${H}"></canvas>
+    <div class="tools" id="cols">${COLOURS.map((c, i) => `<button class="sw ${i ? '' : 'on'}" data-c="${c}" style="background:${c}" aria-label="Colour"></button>`).join('')}
+      <button class="sw" data-c="#ffffff" style="background:#fff" aria-label="Rubber"></button></div>
+    <div class="tools">${SIZES.map((s, i) => `<button class="tool ${i === 1 ? 'sel' : ''}" data-s="${s}"><span class="dot" style="width:${6 + i * 6}px;height:${6 + i * 6}px"></span></button>`).join('')}
+      <button class="tool" id="undo">Undo</button><button class="tool" id="clr">Clear</button></div>
+    <button class="big" id="done">Done</button>
+  `, () => {
+    const cv = $('pad'), g = cv.getContext('2d');
+    const fit = () => {
+      const availH = innerHeight - (cv.getBoundingClientRect().top || 150) - 190, w = Math.max(220, Math.min(innerWidth - 24, availH * W / H, 520));
+      cv.style.width = w + 'px'; cv.style.height = (w * H / W) + 'px';
+    };
+    fit(); requestAnimationFrame(fit);
+    g.fillStyle = '#fff'; g.fillRect(0, 0, W, H); g.lineCap = g.lineJoin = 'round';
+    let col = COLOURS[0], size = SIZES[1], drawing = false, last = null, mid = null; const undo = [g.getImageData(0, 0, W, H)];
+    const pt = e => { const r = cv.getBoundingClientRect(); return { x: (e.clientX - r.left) * W / r.width, y: (e.clientY - r.top) * H / r.height }; };
+    cv.onpointerdown = e => { try { cv.setPointerCapture(e.pointerId); } catch {} drawing = true; last = pt(e); mid = last; g.fillStyle = col; g.beginPath(); g.arc(last.x, last.y, size / 2, 0, 7); g.fill(); };
+    cv.onpointermove = e => {
+      if (!drawing) return; const p = pt(e), m = { x: (last.x + p.x) / 2, y: (last.y + p.y) / 2 };
+      g.strokeStyle = col; g.lineWidth = size; g.beginPath(); g.moveTo(mid.x, mid.y); g.quadraticCurveTo(last.x, last.y, m.x, m.y); g.stroke(); last = p; mid = m;
+    };
+    const up = () => { if (!drawing) return; drawing = false; undo.push(g.getImageData(0, 0, W, H)); if (undo.length > 25) undo.shift(); };
+    cv.onpointerup = up; cv.onpointercancel = up;
+    on('[data-c]', e => { col = e.dataset.c; document.querySelectorAll('[data-c]').forEach(b => b.classList.toggle('on', b === e)); });
+    on('[data-s]', e => { size = +e.dataset.s; document.querySelectorAll('[data-s]').forEach(b => b.classList.toggle('sel', b === e)); });
+    $('undo').onclick = () => { if (undo.length > 1) { undo.pop(); g.putImageData(undo[undo.length - 1], 0, 0); } };
+    $('clr').onclick = () => { g.fillStyle = '#fff'; g.fillRect(0, 0, W, H); undo.push(g.getImageData(0, 0, W, H)); };
+    const finish = () => { clearInterval(timerId); ch.steps.push({ type: 'draw', by: who(), data: cv.toDataURL('image/jpeg', 0.85) }); G.k++; nextTurn(); };
+    $('done').onclick = finish;
+    if (cfg.limit) {
+      const end = Date.now() + cfg.limit * 1000;
+      timerId = setInterval(() => { const left = Math.max(0, end - Date.now()); $('bar').firstElementChild.style.width = (left / (cfg.limit * 10)) + '%'; if (left <= 0) finish(); }, 200);
+    }
+  });
+}
+
+// ---------- guessing ----------
+function guessStep() {
+  const ch = G.chains[G.c], prev = ch.steps[ch.steps.length - 1];
+  view(`
+    <div class="label">What is this?</div>
+    <img class="shot" src="${prev.data}" alt="Drawing to guess">
+    <input type="text" id="guess" maxlength="40" placeholder="Your guess" autocomplete="off" autocapitalize="sentences">
+    <button class="big" id="ok" disabled>Guess</button>
+  `, () => {
+    const inp = $('guess');
+    inp.oninput = () => { $('ok').disabled = !inp.value.trim(); }; inp.focus();
+    const go = () => { const v = inp.value.trim(); if (!v) return; ch.steps.push({ type: 'guess', by: who(), data: v }); G.k++; nextTurn(); };
+    $('ok').onclick = go; inp.onkeydown = e => { if (e.key === 'Enter') go(); };
+  });
+}
+
+// ---------- reveal ----------
+function reveal() {
+  const ch = G.chains[G.c], items = [{ type: 'word', by: cfg.players[ch.start], data: ch.word }, ...ch.steps];
+  let i = 0;
+  const show = () => {
+    const it = items[i], last = i === items.length - 1;
+    const body = it.type === 'draw' ? `<img class="shot" src="${it.data}" alt="Drawing">` : `<div class="quote">${esc(it.data)}</div>`;
+    const lbl = it.type === 'word' ? 'The word was' : it.type === 'draw' ? esc(it.by) + ' drew' : esc(it.by) + ' guessed';
+    view(`
+      <div class="label">Round ${G.c + 1} · ${i + 1} of ${items.length}</div>
+      <div class="label" style="opacity:.9;margin:0">${lbl}</div>
+      ${body}
+      <button class="big" id="nx">${last ? 'Finish' : 'Next'}</button>
+    `, () => { $('nx').onclick = () => { if (last) summary(items); else { i++; show(); } }; });
+  };
+  show();
+}
+
+function summary(items) {
+  const lastGuess = [...items].reverse().find(x => x.type === 'guess');
+  view(`
+    <div class="label">Round ${G.c + 1} result</div>
+    <div class="quote">${esc(items[0].data)}</div>
+    <div class="label" style="margin:0">turned into</div>
+    <div class="quote">${esc(lastGuess ? lastGuess.data : '...a drawing')}</div>
+    <button id="savep">Save the whole chain as a picture</button>
+    <button class="big" id="nx">${G.c + 1 < G.chains.length ? 'Next round' : 'Done'}</button>
+  `, () => {
+    $('savep').onclick = () => saveChain(items);
+    $('nx').onclick = () => { if (G.c + 1 < G.chains.length) { G.c++; G.k = 0; nextTurn(); } else end(); };
+  });
+}
+
+function end() {
+  view(`
+    <h1>That's a wrap</h1>
+    <p class="sub">Same group again, or change who's playing.</p>
+    <button class="big" id="again">Play again</button>
+    <button id="new">Change settings</button>
+  `, () => { $('again').onclick = start; $('new').onclick = setup; });
+}
+
+// ---------- save the chain as one image ----------
+function loadImg(src) { return new Promise(r => { const i = new Image(); i.onload = () => r(i); i.src = src; }); }
+async function saveChain(items) {
+  const w = 900, pad = 30, imgW = w - 2 * pad, imgH = imgW * H / W, c = document.createElement('canvas');
+  const hs = items.map(it => it.type === 'draw' ? 46 + imgH + pad : 130);
+  c.width = w; c.height = pad + 110 + hs.reduce((a, b) => a + b, 0);
+  const g = c.getContext('2d'); g.fillStyle = '#f7f3ea'; g.fillRect(0, 0, c.width, c.height);
+  g.fillStyle = '#161616'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.font = 'italic 54px Didot, Georgia, serif'; g.fillText('Draw and Pass', w / 2, pad + 40);
+  g.fillStyle = '#c8a96a'; g.fillRect(w / 2 - 60, pad + 82, 120, 4);
+  let y = pad + 110;
+  for (const it of items) {
+    g.fillStyle = '#6a6458'; g.font = '600 24px -apple-system, Helvetica, Arial, sans-serif'; g.textAlign = 'left';
+    const lbl = it.type === 'word' ? 'The word was' : it.type === 'draw' ? it.by + ' drew' : it.by + ' guessed';
+    g.fillText(lbl.toUpperCase(), pad, y + 22);
+    if (it.type === 'draw') { const im = await loadImg(it.data); g.drawImage(im, pad, y + 46, imgW, imgH); g.strokeStyle = '#d8d2c4'; g.lineWidth = 2; g.strokeRect(pad, y + 46, imgW, imgH); y += 46 + imgH + pad; }
+    else { g.fillStyle = '#161616'; g.font = 'italic 52px Didot, Georgia, serif'; g.textAlign = 'center'; g.fillText(it.data, w / 2, y + 80, imgW); y += 130; }
+  }
+  const blob = await new Promise(r => c.toBlob(r, 'image/jpeg', 0.9)), file = new File([blob], 'draw-and-pass.jpg', { type: 'image/jpeg' });
+  if (navigator.canShare && navigator.canShare({ files: [file] })) { try { await navigator.share({ files: [file] }); return; } catch (e) { if (e.name === 'AbortError') return; } }
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = file.name; document.body.appendChild(a); a.click(); a.remove();
+}
+
+setup();
+</script>
+</body>
+</html>
