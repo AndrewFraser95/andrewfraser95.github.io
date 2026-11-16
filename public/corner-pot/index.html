@@ -44,8 +44,22 @@
   #holder { font-family:var(--serif); font-style:italic; font-size:min(16vw, 14vh); line-height:1.05; margin:0; overflow-wrap:anywhere; }
   #next { opacity:.6; }
   #drinkMsg { min-height:1.4em; color:var(--gold); font-weight:600; }
-  #fire { width:100%; max-width:340px; font-size:30px; padding:26px; border-radius:20px; background:var(--gold); color:#111; border:0; font-weight:800; }
-  #fire:active { transform:scale(.97); }
+  .events { width:100%; max-width:360px; display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .events .evt:last-child:nth-child(odd) { grid-column:span 2; }
+  .evt { padding:18px 8px; font-size:21px; font-weight:800; border-radius:16px; background:var(--gold); color:#111; border:0; }
+  .evt small { display:block; font-size:12px; font-weight:600; opacity:.7; margin-top:2px; }
+  .evt.yel { background:#f2d12c; }
+  .evt.red { background:#d83a2e; color:#fff; }
+  .evt:active { transform:scale(.97); }
+  #plOverlay { position:fixed; inset:0; background:rgba(14,14,14,.97); display:none; flex-direction:column; align-items:center; gap:12px;
+    padding:calc(env(safe-area-inset-top) + 24px) 24px calc(env(safe-area-inset-bottom) + 24px); text-align:center; z-index:6; overflow-y:auto; }
+  #plOverlay.on { display:flex; }
+  .plrow { display:flex; align-items:center; gap:8px; width:100%; max-width:340px; padding:8px 0; border-bottom:1px solid rgba(244,239,230,.12); font-size:19px; }
+  .plrow .nm { flex:1; text-align:left; overflow-wrap:anywhere; }
+  .plrow button { padding:6px 12px; font-size:17px; }
+  .plrow button.tok { font-size:13px; letter-spacing:1px; text-transform:uppercase; }
+  .plrow button.tok.on { background:var(--gold); color:#111; border-color:var(--gold); }
+  .chip .mv { padding:0 6px; font-size:17px; opacity:.7; }
   .bottom { display:flex; gap:10px; }
   #overlay { position:fixed; inset:0; background:rgba(14,14,14,.96); display:none; flex-direction:column; align-items:center; justify-content:center; gap:16px; padding:24px; text-align:center; z-index:5; }
   #overlay.on { display:flex; }
@@ -73,21 +87,23 @@
 <div id="setup" class="screen active">
   <a class="back" href="/">All apps</a>
   <h1>Corner Pot</h1>
-  <p class="sub">Each time the trigger happens, whoever holds the token puts in a stake and passes it on. At the end, the holder collects the pot and you get a receipt of who owes what.</p>
-  <p class="label">Players</p>
+  <p class="sub">Each time something happens, whoever holds the token puts in a stake and passes it on. At the end, the holder collects the pot and you get a receipt of who owes what.</p>
+  <p class="label">Players (in seating order)</p>
   <div class="players" id="players"></div>
   <div class="row">
     <input type="text" id="newName" placeholder="Add a name" maxlength="16" autocomplete="off" autocapitalize="words">
     <button id="addBtn">Add</button>
   </div>
-  <p class="label">Trigger</p>
+  <p class="label">Events that cost a stake</p>
   <div class="row" id="triggers"></div>
-  <p class="label">Stake per trigger</p>
+  <label class="switch"><input type="checkbox" id="cards"> Yellow and red cards</label>
+  <p class="sub" id="cardNote" style="font-size:13px;opacity:.55"></p>
+  <p class="label">Stake each time</p>
   <div class="row" id="stakes"></div>
   <p class="label">Game</p>
   <div class="row" id="modes"></div>
   <p class="sub" id="modeNote"></p>
-  <label class="switch"><input type="checkbox" id="drink"> Holder drinks on each trigger</label>
+  <label class="switch"><input type="checkbox" id="drink"> Holder drinks each time they pay</label>
   <button class="big" id="start">Start</button>
   <p class="sub" id="msg"></p>
   <p class="sub" style="font-size:12px;opacity:.45">Tracks the pot only. No money moves in the app. Please play responsibly.</p>
@@ -106,9 +122,10 @@
   </div>
   <div style="width:100%;display:flex;flex-direction:column;align-items:center;gap:14px">
     <div id="drinkMsg"></div>
-    <button id="fire"></button>
+    <div class="events" id="events"></div>
     <div class="bottom">
       <button id="undo">Undo</button>
+      <button id="plBtn">Players</button>
       <button id="finish">Full time</button>
     </div>
   </div>
@@ -116,6 +133,14 @@
 
 <div id="end" class="screen" style="justify-content:center">
   <div id="endBody" style="display:contents"></div>
+</div>
+
+<div id="plOverlay">
+  <h2 style="margin:0;font-family:var(--serif);font-style:italic;font-weight:400;font-size:32px">Players</h2>
+  <p class="sub" style="font-size:14px">Move people to match where they are sitting. Tap Token to give someone the token. Undo history is cleared when you change this.</p>
+  <div id="plList" style="width:100%;display:flex;flex-direction:column;align-items:center"></div>
+  <div class="row"><input type="text" id="plNew" placeholder="Add a late joiner" maxlength="16" autocomplete="off" autocapitalize="words"><button id="plAdd">Add</button></div>
+  <button class="big" id="plDone">Done</button>
 </div>
 
 <div id="overlay">
@@ -127,17 +152,19 @@
 </div>
 
 <script>
-const TRIGGERS = ['Corner', 'Throw-in', 'Goal', 'Foul'];
+const TRIGGERS = ['Corner', 'Goal kick', 'Throw-in', 'Goal', 'Foul'];
 const STAKES = [10, 20, 50, 100];
 const MODES = { full: 'Full time', roulette: 'Pub roulette' };
 const $ = id => document.getElementById(id);
 const gbp = p => '£' + (p / 100).toFixed(2);
 const KEY = 'cornerpot-v1';
-const fresh = () => ({ players: ['Player 1', 'Player 2', 'Player 3', 'Player 4'], trigger: 'Corner', stake: 20, drink: false, mode: 'full',
+const fresh = () => ({ players: ['Player 1', 'Player 2', 'Player 3', 'Player 4'], triggers: ['Corner', 'Goal kick'], cards: true, counts: {}, stake: 20, drink: false, mode: 'full',
   phase: 'setup', pot: 0, holder: 0, events: 0, contrib: [], history: [], roundEnd: null });
 let S = fresh();
 try { const x = JSON.parse(localStorage.getItem(KEY)); if (x && x.players) S = Object.assign(fresh(), x); } catch {}
 if (!Array.isArray(S.contrib) || S.contrib.length !== S.players.length) S.contrib = S.players.map(() => 0);
+if (!Array.isArray(S.triggers)) S.triggers = [S.trigger || 'Corner'];
+if (!S.counts) S.counts = {};
 const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch {} };
 const show = id => document.querySelectorAll('.screen').forEach(s => s.classList.toggle('active', s.id === id));
 
@@ -148,11 +175,24 @@ function renderSetup() {
     const t = document.createElement('span'); t.textContent = n;
     const x = document.createElement('button'); x.textContent = '×'; x.setAttribute('aria-label', 'Remove ' + n);
     x.onclick = () => { S.players.splice(i, 1); save(); renderSetup(); };
-    c.append(t, x); $('players').appendChild(c);
+    const mv = (txt, d, label) => { const b = document.createElement('button'); b.className = 'mv'; b.textContent = txt; b.setAttribute('aria-label', label + ' ' + n);
+      b.disabled = i + d < 0 || i + d >= S.players.length; b.onclick = () => { movePlayer(i, d); renderSetup(); }; return b; };
+    c.append(mv('‹', -1, 'Move earlier'), t, mv('›', 1, 'Move later'), x); $('players').appendChild(c);
   });
   const row = (id, items, cur, label, on) => { $(id).innerHTML = ''; items.forEach(v => { const b = document.createElement('button');
     b.textContent = label(v); b.className = v === cur ? 'sel' : ''; b.onclick = () => { on(v); save(); renderSetup(); }; $(id).appendChild(b); }); };
-  row('triggers', TRIGGERS, S.trigger, v => v, v => S.trigger = v);
+  $('triggers').innerHTML = '';
+  TRIGGERS.forEach(v => {
+    const b = document.createElement('button'), isOn = S.triggers.includes(v); b.textContent = v; b.className = isOn ? 'sel' : '';
+    b.onclick = () => {
+      if (isOn && S.triggers.length === 1 && !S.cards) return;
+      S.triggers = isOn ? S.triggers.filter(x => x !== v) : TRIGGERS.filter(x => x === v || S.triggers.includes(x));
+      save(); renderSetup();
+    };
+    $('triggers').appendChild(b);
+  });
+  $('cards').checked = S.cards;
+  $('cardNote').textContent = S.cards ? 'Yellow card: the holder puts in and passes. Red card: the holder and the next player both put in.' : '';
   row('stakes', STAKES, S.stake, v => v < 100 ? v + 'p' : '£' + v / 100, v => S.stake = v);
   row('modes', Object.keys(MODES), S.mode, v => MODES[v], v => S.mode = v);
   $('modeNote').textContent = S.mode === 'full'
@@ -169,6 +209,16 @@ function addPlayer() {
 $('addBtn').onclick = addPlayer;
 $('newName').onkeydown = e => { if (e.key === 'Enter') addPlayer(); };
 $('drink').onchange = e => { S.drink = e.target.checked; save(); };
+$('cards').onchange = e => { if (!e.target.checked && !S.triggers.length) { e.target.checked = true; return; } S.cards = e.target.checked; save(); renderSetup(); };
+
+function movePlayer(i, d) {
+  const j = i + d;
+  if (j < 0 || j >= S.players.length) return;
+  [S.players[i], S.players[j]] = [S.players[j], S.players[i]];
+  const a = S.contrib[i] || 0, b = S.contrib[j] || 0; S.contrib[i] = b; S.contrib[j] = a;
+  if (S.holder === i) S.holder = j; else if (S.holder === j) S.holder = i;
+  S.history = []; save();
+}
 
 function scheduleWhistle() {
   S.roundEnd = Date.now() + (5 + Math.random() * 10) * 60000;
@@ -177,7 +227,7 @@ function scheduleWhistle() {
 function start() {
   if (S.players.length < 2) { $('msg').textContent = 'Add at least two players.'; return; }
   $('msg').textContent = '';
-  Object.assign(S, { phase: 'game', pot: 0, holder: 0, events: 0, contrib: S.players.map(() => 0), history: [], roundEnd: null });
+  Object.assign(S, { phase: 'game', pot: 0, holder: 0, events: 0, counts: {}, contrib: S.players.map(() => 0), history: [], roundEnd: null });
   if (S.mode === 'roulette') scheduleWhistle();
   save(); renderGame(); show('game');
 }
@@ -185,29 +235,42 @@ function start() {
 function renderGame() {
   const n = S.players.length;
   $('pot').textContent = gbp(S.pot);
-  $('meta').textContent = S.events + ' ' + S.trigger.toLowerCase() + (S.events === 1 ? '' : 's') + ' · ' + gbp(S.stake) + ' each time';
+  $('meta').textContent = S.events + (S.events === 1 ? ' event' : ' events') + ' · ' + gbp(S.stake) + ' each time';
   $('holder').textContent = S.players[S.holder];
   $('next').textContent = 'Next: ' + S.players[(S.holder + 1) % n];
-  $('fire').textContent = S.trigger + '!';
+  $('events').innerHTML = '';
+  [...S.triggers, ...(S.cards ? ['Yellow card', 'Red card'] : [])].forEach(k => {
+    const b = document.createElement('button');
+    b.className = 'evt' + (k === 'Yellow card' ? ' yel' : k === 'Red card' ? ' red' : '');
+    b.textContent = k + '!';
+    if (k === 'Red card') { const sm = document.createElement('small'); sm.textContent = 'two people pay'; b.append(sm); }
+    b.onclick = () => fire(k);
+    $('events').appendChild(b);
+  });
   $('undo').disabled = !S.history.length;
   $('undo').style.opacity = S.history.length ? 1 : .4;
   $('finish').hidden = S.mode === 'roulette';
 }
 
-function fire() {
-  const n = S.players.length, prev = S.players[S.holder];
-  S.history.push({ holder: S.holder, pot: S.pot, events: S.events, contrib: S.contrib.slice() });
-  S.contrib[S.holder] += S.stake; S.pot += S.stake; S.events++; S.holder = (S.holder + 1) % n;
-  $('drinkMsg').textContent = (S.drink ? prev + ' drinks. ' : '') + prev + ' puts in ' + gbp(S.stake);
-  try { navigator.vibrate && navigator.vibrate(40); } catch {}
-  if (window.tossCoin) window.tossCoin(S.stake);
+function fire(kind) {
+  const n = S.players.length, times = kind === 'Red card' ? Math.min(2, n) : 1, payers = [];
+  S.history.push({ holder: S.holder, pot: S.pot, events: S.events, contrib: S.contrib.slice(), counts: Object.assign({}, S.counts) });
+  for (let i = 0; i < times; i++) {
+    payers.push(S.players[S.holder]);
+    S.contrib[S.holder] += S.stake; S.pot += S.stake; S.holder = (S.holder + 1) % n;
+    const stake = S.stake; if (window.tossCoin) setTimeout(() => window.tossCoin(stake), i * 380);
+  }
+  S.events++; S.counts[kind] = (S.counts[kind] || 0) + 1;
+  const who = payers.join(' and ');
+  $('drinkMsg').textContent = (S.drink ? who + (times > 1 ? ' drink. ' : ' drinks. ') : '') + who + (times > 1 ? ' both put in ' : ' puts in ') + gbp(S.stake);
+  try { navigator.vibrate && navigator.vibrate(kind === 'Red card' ? [60, 60, 60] : 40); } catch {}
   save(); renderGame();
 }
 
 function undo() {
   const h = S.history.pop();
   if (!h) return;
-  Object.assign(S, { holder: h.holder, pot: h.pot, events: h.events, contrib: h.contrib });
+  Object.assign(S, { holder: h.holder, pot: h.pot, events: h.events, contrib: h.contrib, counts: h.counts || {} });
   $('drinkMsg').textContent = '';
   save(); renderGame();
 }
@@ -217,7 +280,7 @@ function receipt() {
   const box = document.createElement('div'); box.className = 'receipt';
   const mk = (tag, cls, txt) => { const e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; };
   const ln = (l, rt, cls) => { const d = mk('div', 'ln' + (cls ? ' ' + cls : '')); d.append(mk('span', '', l), mk('span', '', rt)); return d; };
-  box.append(mk('h3', '', 'RECEIPT'), mk('div', 'note', S.events + ' ' + S.trigger.toLowerCase() + (S.events === 1 ? '' : 's') + ' at ' + gbp(S.stake)));
+  box.append(mk('h3', '', 'RECEIPT'), mk('div', 'note', (Object.entries(S.counts || {}).filter(([, c]) => c).map(([k, c]) => c + ' ' + k.toLowerCase() + (c > 1 ? 's' : '')).join(', ') || S.events + ' events') + ' · ' + gbp(S.stake) + ' a time'));
   let owed = 0;
   S.players.forEach((n, i) => {
     if (i === win || !S.contrib[i]) return;
@@ -256,13 +319,32 @@ function checkWhistle() {
 }
 $('nextRound').onclick = () => {
   $('overlay').classList.remove('on');
-  Object.assign(S, { pot: 0, events: 0, contrib: S.players.map(() => 0), history: [] }); $('drinkMsg').textContent = '';
+  Object.assign(S, { pot: 0, events: 0, counts: {}, contrib: S.players.map(() => 0), history: [] }); $('drinkMsg').textContent = '';
   scheduleWhistle(); save(); renderGame();
 };
 setInterval(checkWhistle, 1000);
 
 $('start').onclick = start;
-$('fire').onclick = fire;
+function renderPl() {
+  $('plList').innerHTML = '';
+  S.players.forEach((n, i) => {
+    const row = document.createElement('div'); row.className = 'plrow';
+    const tok = document.createElement('button'); tok.className = 'tok' + (S.holder === i ? ' on' : ''); tok.textContent = 'Token';
+    tok.onclick = () => { S.holder = i; S.history = []; save(); renderPl(); renderGame(); };
+    const nm = document.createElement('span'); nm.className = 'nm'; nm.textContent = n;
+    const up = document.createElement('button'); up.textContent = '↑'; up.disabled = i === 0; up.setAttribute('aria-label', 'Move up ' + n);
+    const dn = document.createElement('button'); dn.textContent = '↓'; dn.disabled = i === S.players.length - 1; dn.setAttribute('aria-label', 'Move down ' + n);
+    up.onclick = () => { movePlayer(i, -1); renderPl(); renderGame(); };
+    dn.onclick = () => { movePlayer(i, 1); renderPl(); renderGame(); };
+    row.append(tok, nm, up, dn); $('plList').appendChild(row);
+  });
+}
+$('plBtn').onclick = () => { renderPl(); $('plOverlay').classList.add('on'); };
+$('plDone').onclick = () => $('plOverlay').classList.remove('on');
+$('plAdd').onclick = () => {
+  const v = $('plNew').value.trim(); if (!v) return;
+  S.players.push(v); S.contrib.push(0); S.history = []; $('plNew').value = ''; save(); renderPl(); renderGame();
+};
 $('undo').onclick = undo;
 $('finish').onclick = finish;
 
